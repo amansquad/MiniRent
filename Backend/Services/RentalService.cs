@@ -1,0 +1,244 @@
+using Microsoft.EntityFrameworkCore;
+using AutoMapper;
+using MiniRent.Backend.Data;
+using MiniRent.Backend.Dtos;
+using MiniRent.Backend.Models;
+using MiniRent.Backend.Services.Interfaces;
+
+namespace MiniRent.Backend.Services;
+
+public class RentalService : IRentalService
+{
+    private readonly AppDbContext _context;
+    private readonly IMapper _mapper;
+
+    public RentalService(AppDbContext context, IMapper mapper)
+    {
+        _context = context;
+        _mapper = mapper;
+    }
+
+    public async Task<(List<RentalRecordDto> Rentals, int TotalCount)> GetRentalsAsync(RentalFilterDto filter, int? userId = null, bool isAdmin = false)
+    {
+        var query = _context.RentalRecords
+            .Include(r => r.Property)
+            .Include(r => r.CreatedBy)
+            .AsQueryable();
+
+        // If not admin, filter by user's own rentals OR rentals of user's properties
+        if (!isAdmin && userId.HasValue)
+        {
+            query = query.Where(r => r.CreatedById == userId.Value || r.Property.CreatedById == userId.Value);
+        }
+
+        // Apply filters
+        if (filter.PropertyId.HasValue)
+        {
+            query = query.Where(r => r.PropertyId == filter.PropertyId.Value);
+        }
+
+        if (!string.IsNullOrEmpty(filter.Status) && Enum.TryParse<RentalStatus>(filter.Status, true, out var status))
+        {
+            query = query.Where(r => r.Status == status);
+        }
+
+        if (filter.StartDateFrom.HasValue)
+        {
+            query = query.Where(r => r.StartDate >= filter.StartDateFrom.Value);
+        }
+
+        if (filter.StartDateTo.HasValue)
+        {
+            query = query.Where(r => r.StartDate <= filter.StartDateTo.Value);
+        }
+
+        if (!string.IsNullOrEmpty(filter.TenantName))
+        {
+            query = query.Where(r => r.TenantName.Contains(filter.TenantName));
+        }
+
+        var totalCount = await query.CountAsync();
+
+        var rentals = await query
+            .OrderByDescending(r => r.CreatedAt)
+            .Skip((filter.Page - 1) * filter.PageSize)
+            .Take(filter.PageSize)
+            .ToListAsync();
+
+        return (_mapper.Map<List<RentalRecordDto>>(rentals), totalCount);
+    }
+
+    public async Task<RentalRecordDto?> GetRentalByIdAsync(int id, int? userId = null, bool isAdmin = false)
+    {
+        var query = _context.RentalRecords
+            .Include(r => r.Property)
+            .Include(r => r.CreatedBy)
+            .Where(r => r.Id == id);
+
+        // If not admin, filter by user's own rentals OR rentals of user's properties
+        if (!isAdmin && userId.HasValue)
+        {
+            query = query.Where(r => r.CreatedById == userId.Value || r.Property.CreatedById == userId.Value);
+        }
+
+        var rental = await query.FirstOrDefaultAsync();
+
+        return rental != null ? _mapper.Map<RentalRecordDto>(rental) : null;
+    }
+
+    public async Task<RentalRecordDto> CreateRentalAsync(RentalCreateDto createDto, int userId)
+    {
+        // Check if property exists and is available
+        var property = await _context.Properties
+            .FirstOrDefaultAsync(p => p.Id == createDto.PropertyId && !p.IsDeleted);
+
+        if (property == null)
+        {
+            throw new ArgumentException("Property not found");
+        }
+
+        // Create rental record
+        var rental = _mapper.Map<RentalRecord>(createDto);
+        rental.CreatedAt = DateTime.UtcNow;
+        rental.CreatedById = userId;
+
+        // If owner creates it, it's Active immediately.
+        // If tenant requests it, it's Pending.
+        var isOwner = property.CreatedById == userId;
+        rental.Status = isOwner ? RentalStatus.Active : RentalStatus.Pending;
+
+        _context.RentalRecords.Add(rental);
+
+        if (isOwner)
+        {
+            // Update property status to Rented
+            property.Status = PropertyStatus.Rented;
+            property.UpdatedAt = DateTime.UtcNow;
+            property.UpdatedById = userId;
+        }
+
+        await _context.SaveChangesAsync();
+
+        // Reload with related data
+        var createdRental = await _context.RentalRecords
+            .Include(r => r.Property)
+            .Include(r => r.CreatedBy)
+            .FirstAsync(r => r.Id == rental.Id);
+
+        return _mapper.Map<RentalRecordDto>(createdRental);
+    }
+
+    public async Task<RentalRecordDto?> UpdateRentalAsync(RentalUpdateDto updateDto, int userId, bool isAdmin = false)
+    {
+        var query = _context.RentalRecords
+            .Include(r => r.Property)
+            .Where(r => r.Id == updateDto.Id);
+
+        // If not admin, only allow updating own rentals
+        if (!isAdmin)
+        {
+            query = query.Where(r => r.CreatedById == userId);
+        }
+
+        var rental = await query.FirstOrDefaultAsync();
+
+        if (rental == null)
+            return null;
+
+        _mapper.Map(updateDto, rental);
+        rental.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        // Reload with related data
+        var updatedRental = await _context.RentalRecords
+            .Include(r => r.Property)
+            .Include(r => r.CreatedBy)
+            .FirstAsync(r => r.Id == rental.Id);
+
+        return _mapper.Map<RentalRecordDto>(updatedRental);
+    }
+
+    public async Task<RentalRecordDto?> UpdateStatusAsync(int id, string status, int userId, bool isAdmin = false)
+    {
+        var query = _context.RentalRecords
+            .Include(r => r.Property)
+            .Where(r => r.Id == id);
+
+        // If not admin, only property owner can update status (Approve/Reject)
+        if (!isAdmin)
+        {
+            query = query.Where(r => r.Property.CreatedById == userId);
+        }
+
+        var rental = await query.FirstOrDefaultAsync();
+        if (rental == null) return null;
+
+        if (Enum.TryParse<RentalStatus>(status, true, out var newStatus))
+        {
+            // If approving (Pending -> Active), update property status
+            if (rental.Status == RentalStatus.Pending && newStatus == RentalStatus.Active)
+            {
+                rental.Property.Status = PropertyStatus.Rented;
+                rental.Property.UpdatedAt = DateTime.UtcNow;
+                rental.Property.UpdatedById = userId;
+            }
+            
+            rental.Status = newStatus;
+            rental.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+        }
+
+        // Reload with related data
+        var updatedRental = await _context.RentalRecords
+            .Include(r => r.Property)
+            .Include(r => r.CreatedBy)
+            .FirstAsync(r => r.Id == rental.Id);
+
+        return _mapper.Map<RentalRecordDto>(updatedRental);
+    }
+
+    public async Task<RentalRecordDto?> EndRentalAsync(int id, RentalEndDto endDto, int userId, bool isAdmin = false)
+    {
+        var query = _context.RentalRecords
+            .Include(r => r.Property)
+            .Where(r => r.Id == id);
+
+        // If not admin, only allow ending own rentals
+        if (!isAdmin)
+        {
+            query = query.Where(r => r.CreatedById == userId);
+        }
+
+        var rental = await query.FirstOrDefaultAsync();
+
+        if (rental == null || rental.Status != RentalStatus.Active)
+            return null;
+
+        rental.EndDate = endDto.EndDate;
+        rental.Status = RentalStatus.Ended;
+        rental.UpdatedAt = DateTime.UtcNow;
+
+        // Update property status to Available
+        rental.Property.Status = PropertyStatus.Available;
+        rental.Property.UpdatedAt = DateTime.UtcNow;
+        rental.Property.UpdatedById = userId;
+
+        if (!string.IsNullOrEmpty(endDto.Notes))
+        {
+            rental.Notes = string.IsNullOrEmpty(rental.Notes)
+                ? endDto.Notes
+                : $"{rental.Notes}\n\nEnded: {endDto.Notes}";
+        }
+
+        await _context.SaveChangesAsync();
+
+        // Reload with related data
+        var updatedRental = await _context.RentalRecords
+            .Include(r => r.Property)
+            .Include(r => r.CreatedBy)
+            .FirstAsync(r => r.Id == rental.Id);
+
+        return _mapper.Map<RentalRecordDto>(updatedRental);
+    }
+}
