@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { EndRentalModal } from "@/components/EndRentalModal";
-import { Calendar, User, Phone, Mail, Info, CheckCircle2, XCircle, Ban, Clock } from "lucide-react";
+import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
+import { Calendar, User, Phone, Mail, Info, CheckCircle2, XCircle, Ban, Clock, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { getUser } from "@/lib/auth";
@@ -18,6 +19,7 @@ export default function RentalsPage() {
     const [filter, setFilter] = useState<"all" | "my">("all");
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+    const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
     const [highlightedId, setHighlightedId] = useState<number | null>(null);
     const [endRental, setEndRental] = useState<any | null>(null);
     const { toast } = useToast();
@@ -27,6 +29,7 @@ export default function RentalsPage() {
         if (user) {
             setIsLoggedIn(true);
             setCurrentUserId(user.id);
+            setCurrentUserRole(user.role || user.Role);
         }
 
         // Check for highlighting
@@ -66,6 +69,50 @@ export default function RentalsPage() {
                 setError(err.message);
                 setLoading(false);
             });
+    };
+
+    const [deleteId, setDeleteId] = useState<number | null>(null);
+
+    const handleDeleteClick = (id: number) => {
+        setDeleteId(id);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!deleteId) return;
+
+        try {
+            const token = typeof (window as any) !== "undefined" ? (window as any).localStorage.getItem("token") : null;
+            const res = await fetch(`/api/rentals/${deleteId}`, {
+                method: "DELETE",
+                headers: token ? { "Authorization": `Bearer ${token}` } : {}
+            });
+
+            if (res.ok) {
+                // If 204 No Content
+                toast({
+                    title: "Success",
+                    description: "Rental deleted successfully",
+                });
+                fetchRentals();
+            } else {
+                const data: any = await res.json().catch(() => ({}));
+                // Catch in case of 204 empty body but we checked ok above, so here it is likely error json
+                toast({
+                    title: "Error",
+                    description: data.error || "Failed to delete rental",
+                    variant: "destructive",
+                });
+            }
+        } catch (err) {
+            console.error("Failed to delete rental:", err);
+            toast({
+                title: "Error",
+                description: "An error occurred",
+                variant: "destructive",
+            });
+        } finally {
+            setDeleteId(null);
+        }
     };
 
     const handleStatusUpdate = async (id: number, status: string) => {
@@ -222,6 +269,19 @@ export default function RentalsPage() {
                                         </Button>
                                     )}
 
+                                    {/* Delete Button: Admin OR (Creator AND Not Active) */}
+                                    {(currentUserRole === "Admin" || (currentUserId && rental.createdById === currentUserId && rental.status !== "Active")) && (
+                                        <Button
+                                            size="sm"
+                                            variant="destructive"
+                                            className="flex-1 h-8 text-xs"
+                                            onClick={() => handleDeleteClick(rental.id)}
+                                        >
+                                            <Trash2 className="w-3 h-3 mr-1.5" />
+                                            Delete
+                                        </Button>
+                                    )}
+
                                     <Button variant="ghost" size="sm" className="flex-1 h-8 text-xs" asChild>
                                         <Link href={`/properties/${rental.propertyId}`}>
                                             <Info className="w-3 h-3 mr-1.5" />
@@ -244,6 +304,14 @@ export default function RentalsPage() {
                     onSuccess={fetchRentals}
                 />
             )}
+
+            <DeleteConfirmationModal
+                isOpen={!!deleteId}
+                onClose={() => setDeleteId(null)}
+                onConfirm={handleConfirmDelete}
+                title="Delete Rental"
+                description="Are you sure you want to delete this rental record? This action cannot be undone."
+            />
         </div>
     );
 }

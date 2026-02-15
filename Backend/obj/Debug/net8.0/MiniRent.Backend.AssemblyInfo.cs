@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MiniRent.Backend")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b3d57a0cc3c4dde545bd3feba4db02f3e0011f40")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+406ff43a184bd2efad844c029521a8b6079dff0e")]
 [assembly: System.Reflection.AssemblyProductAttribute("MiniRent.Backend")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MiniRent.Backend")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

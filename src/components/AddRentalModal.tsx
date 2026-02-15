@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface Property {
     id: number;
@@ -24,6 +25,7 @@ export function AddRentalModal({ isOpen, onClose, property }: AddRentalModalProp
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     const tomorrowStr = tomorrow.toISOString().split('T')[0];
+    const { toast } = useToast();
 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
@@ -72,13 +74,25 @@ export function AddRentalModal({ isOpen, onClose, property }: AddRentalModalProp
 
             if (!res.ok) {
                 const errorData: any = await res.json().catch(() => ({}));
-                throw new Error(errorData.error || "Failed to submit rental request");
+
+                let errorMessage = errorData.error || errorData.message || "Failed to submit rental request";
+
+                // Parse validation errors
+                if (errorData.errors) {
+                    const validationErrors = Object.values(errorData.errors).flat();
+                    if (validationErrors.length > 0) {
+                        errorMessage = validationErrors.join(", ");
+                    }
+                }
+
+                throw new Error(errorMessage);
             }
 
             onClose();
-            if (typeof (window as any) !== "undefined") {
-                (window as any).alert("Rental request submitted successfully! The owner will review it.");
-            }
+            toast({
+                title: "Success",
+                description: "Rental request submitted successfully! The owner will review it.",
+            });
         } catch (err: any) {
             setError(err.message);
         } finally {

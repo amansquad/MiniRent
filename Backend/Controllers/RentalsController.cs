@@ -140,7 +140,7 @@ public class RentalsController : ControllerBase
         }
 
         var userId = int.Parse(userIdClaim.Value);
-        var roleClaim = User.FindFirst(ClaimTypes.Role);
+        var roleClaim = User.FindFirst(ClaimTypes.Role) ?? User.FindFirst("role");
         bool isAdmin = roleClaim?.Value == "Admin";
 
         var rental = await _rentalService.EndRentalAsync(id, endDto, userId, isAdmin);
@@ -151,5 +151,30 @@ public class RentalsController : ControllerBase
         }
 
         return Ok(rental);
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteRental(int id)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null)
+        {
+            return Unauthorized();
+        }
+
+        var userId = int.Parse(userIdClaim.Value);
+        var roleClaim = User.FindFirst(ClaimTypes.Role) ?? User.FindFirst("role");
+        bool isAdmin = roleClaim?.Value == "Admin";
+
+        var success = await _rentalService.DeleteRentalAsync(id, userId, isAdmin);
+
+        if (!success)
+        {
+            // Could be not found or not authorized (e.g. active rental)
+            // Ideally service returns detailed error, but boolean is fine for now
+            return NotFound();
+        }
+
+        return NoContent();
     }
 }

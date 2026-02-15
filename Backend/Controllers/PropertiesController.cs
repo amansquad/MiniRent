@@ -22,7 +22,7 @@ public class PropertiesController : ControllerBase
     public async Task<IActionResult> GetProperties([FromQuery] PropertyFilterDto filter, [FromQuery] string? mode = null)
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-        var roleClaim = User.FindFirst(ClaimTypes.Role);
+        var roleClaim = User.FindFirst(ClaimTypes.Role) ?? User.FindFirst("role");
         int? userId = userIdClaim != null ? int.Parse(userIdClaim.Value) : null;
         bool isAdmin = roleClaim?.Value == "Admin";
 
@@ -48,7 +48,7 @@ public class PropertiesController : ControllerBase
     public async Task<IActionResult> GetProperty(int id)
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-        var roleClaim = User.FindFirst(ClaimTypes.Role);
+        var roleClaim = User.FindFirst(ClaimTypes.Role) ?? User.FindFirst("role");
         int? userId = userIdClaim != null ? int.Parse(userIdClaim.Value) : null;
         bool isAdmin = roleClaim?.Value == "Admin";
 
@@ -87,7 +87,7 @@ public class PropertiesController : ControllerBase
         }
 
         var userId = int.Parse(userIdClaim.Value);
-        var roleClaim = User.FindFirst(ClaimTypes.Role);
+        var roleClaim = User.FindFirst(ClaimTypes.Role) ?? User.FindFirst("role");
         bool isAdmin = roleClaim?.Value == "Admin";
         updateDto.Id = id;
 
@@ -111,7 +111,7 @@ public class PropertiesController : ControllerBase
         }
 
         var userId = int.Parse(userIdClaim.Value);
-        var roleClaim = User.FindFirst(ClaimTypes.Role);
+        var roleClaim = User.FindFirst(ClaimTypes.Role) ?? User.FindFirst("role");
         bool isAdmin = roleClaim?.Value == "Admin";
 
         var success = await _propertyService.DeletePropertyAsync(id, userId, isAdmin);
@@ -134,7 +134,7 @@ public class PropertiesController : ControllerBase
         }
 
         var userId = int.Parse(userIdClaim.Value);
-        var roleClaim = User.FindFirst(ClaimTypes.Role);
+        var roleClaim = User.FindFirst(ClaimTypes.Role) ?? User.FindFirst("role");
         bool isAdmin = roleClaim?.Value == "Admin";
 
         var property = await _propertyService.UpdatePropertyStatusAsync(id, statusDto, userId, isAdmin);

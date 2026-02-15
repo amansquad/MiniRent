@@ -176,12 +176,29 @@ public class RentalService : IRentalService
 
         if (Enum.TryParse<RentalStatus>(status, true, out var newStatus))
         {
-            // If approving (Pending -> Active), update property status
+            // If approves (Pending -> Active), update property status
             if (rental.Status == RentalStatus.Pending && newStatus == RentalStatus.Active)
             {
                 rental.Property.Status = PropertyStatus.Rented;
                 rental.Property.UpdatedAt = DateTime.UtcNow;
                 rental.Property.UpdatedById = userId;
+            }
+            // If rental ends or is terminated (Active -> Ended/Terminated), free the property
+            else if ((rental.Status == RentalStatus.Active || rental.Status == RentalStatus.Pending) && 
+                     (newStatus == RentalStatus.Ended || newStatus == RentalStatus.Terminated || newStatus == RentalStatus.Rejected))
+            {
+                rental.Property.Status = PropertyStatus.Available;
+                rental.Property.UpdatedAt = DateTime.UtcNow;
+                rental.Property.UpdatedById = userId;
+
+                // Should we set EndDate if not set? 
+                if (newStatus == RentalStatus.Ended || newStatus == RentalStatus.Terminated)
+                {
+                    if (!rental.EndDate.HasValue)
+                    {
+                        rental.EndDate = DateTime.UtcNow;
+                    }
+                }
             }
             
             rental.Status = newStatus;
@@ -240,5 +257,37 @@ public class RentalService : IRentalService
             .FirstAsync(r => r.Id == rental.Id);
 
         return _mapper.Map<RentalRecordDto>(updatedRental);
+    }
+
+    public async Task<bool> DeleteRentalAsync(int id, int userId, bool isAdmin = false)
+    {
+        var query = _context.RentalRecords
+            .Include(r => r.Property)
+            .Where(r => r.Id == id);
+
+        var rental = await query.FirstOrDefaultAsync();
+
+        if (rental == null)
+            return false;
+
+        // Permission check
+        if (!isAdmin)
+        {
+            // Only creator can delete their own
+            if (rental.CreatedById != userId)
+            {
+                return false;
+            }
+
+            // Creator cannot delete Active rentals (must end them first)
+            if (rental.Status == RentalStatus.Active)
+            {
+                return false;
+            }
+        }
+
+        _context.RentalRecords.Remove(rental);
+        await _context.SaveChangesAsync();
+        return true;
     }
 }

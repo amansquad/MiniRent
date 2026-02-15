@@ -10,4 +10,5 @@ public interface IRentalService
     Task<RentalRecordDto?> UpdateRentalAsync(RentalUpdateDto updateDto, int userId, bool isAdmin = false);
     Task<RentalRecordDto?> UpdateStatusAsync(int id, string status, int userId, bool isAdmin = false);
     Task<RentalRecordDto?> EndRentalAsync(int id, RentalEndDto endDto, int userId, bool isAdmin = false);
+    Task<bool> DeleteRentalAsync(int id, int userId, bool isAdmin = false);
 }

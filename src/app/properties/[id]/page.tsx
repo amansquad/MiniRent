@@ -45,12 +45,16 @@ export default function PropertyDetailPage() {
     const [property, setProperty] = useState<Property | null>(null);
     const [loading, setLoading] = useState(true);
     const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+    const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
     const [showInquiryModal, setShowInquiryModal] = useState(false);
     const [showRentalModal, setShowRentalModal] = useState(false);
 
     useEffect(() => {
         const user = getUser();
-        if (user) setCurrentUserId(user.id);
+        if (user) {
+            setCurrentUserId(user.id);
+            setCurrentUserRole(user.role || user.Role);
+        }
         fetchProperty();
     }, [params.id]);
 
@@ -84,7 +88,9 @@ export default function PropertyDetailPage() {
     if (loading) return <div className="p-8 text-center text-muted-foreground">Loading details...</div>;
     if (!property) return null;
 
-    const isOwner = currentUserId === property.createdById;
+    if (!property) return null;
+
+    const isOwner = currentUserId === property.createdById || currentUserRole === "Admin";
 
     return (
         <div className="p-8 max-w-5xl mx-auto">

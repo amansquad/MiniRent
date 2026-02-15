@@ -37,7 +37,7 @@ public class PropertyCreateDto
     public int? Floor { get; set; }
     
     [Required]
-    [Range(1, 100000)]
+    [Range(1, 10000000)]
     public decimal MonthlyRent { get; set; }
     
     [MaxLength(1000)]

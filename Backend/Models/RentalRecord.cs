@@ -27,11 +27,11 @@ public class RentalRecord
     public DateTime? EndDate { get; set; }
     
     [Required]
-    [Range(0, 100000)]
+    [Range(0, 10000000)]
     public decimal Deposit { get; set; }
     
     [Required]
-    [Range(0, 100000)]
+    [Range(0, 10000000)]
     public decimal MonthlyRent { get; set; }
     
     public string? Notes { get; set; }

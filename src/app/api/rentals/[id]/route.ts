@@ -4,7 +4,7 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
     const { id } = await context.params;
     const token = request.headers.get("authorization") || "";
 
-    const res = await fetch(`http://127.0.0.1:5000/api/properties/${id}`, {
+    const res = await fetch(`http://127.0.0.1:5000/api/rentals/${id}`, {
         headers: {
             "Content-Type": "application/json",
             ...(token ? { "Authorization": token } : {})
@@ -25,7 +25,7 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
     const token = request.headers.get("authorization") || "";
     const body = await request.json();
 
-    const res = await fetch(`http://127.0.0.1:5000/api/properties/${id}`, {
+    const res = await fetch(`http://127.0.0.1:5000/api/rentals/${id}`, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json",
@@ -47,7 +47,7 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
     const { id } = await context.params;
     const token = request.headers.get("authorization") || "";
 
-    const res = await fetch(`http://127.0.0.1:5000/api/properties/${id}`, {
+    const res = await fetch(`http://127.0.0.1:5000/api/rentals/${id}`, {
         method: "DELETE",
         headers: {
             "Content-Type": "application/json",
@@ -56,7 +56,10 @@ export async function DELETE(request: Request, context: { params: Promise<{ id: 
     });
 
     if (!res.ok) {
-        const error = await res.text();
+        // Backend might return empty body on error if 404/401/403?
+        // Usually controller returns NotFound() which has no body?
+        // Let's check text() safely.
+        const error = await res.text().catch(() => "Unknown error");
         return NextResponse.json({ error }, { status: res.status });
     }
 

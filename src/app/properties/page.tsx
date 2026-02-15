@@ -13,6 +13,7 @@ import { AddRentalModal } from "@/components/AddRentalModal";
 import { useToast } from "@/hooks/use-toast";
 import { getUser } from "@/lib/auth";
 import { Badge } from "@/components/ui/badge";
+import { DeleteConfirmationModal } from "@/components/DeleteConfirmationModal";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -35,6 +36,7 @@ export default function PropertiesPage() {
     const [inquiryProperty, setInquiryProperty] = useState<Property | null>(null);
     const [rentProperty, setRentProperty] = useState<Property | null>(null);
     const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+    const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
     const [highlightedId, setHighlightedId] = useState<number | null>(null);
     const { toast } = useToast();
 
@@ -57,6 +59,7 @@ export default function PropertiesPage() {
         const user = getUser();
         if (user) {
             setCurrentUserId(user.id);
+            setCurrentUserRole(user.role || user.Role); // handle case sensitivity just in case
         }
         fetchProperties();
     }, [filter]);
@@ -146,12 +149,18 @@ export default function PropertiesPage() {
         }
     };
 
-    const handleDelete = async (id: number) => {
-        if (typeof (window as any) !== "undefined" && !(window as any).confirm("Are you sure you want to delete this property?")) return;
+    const [deleteId, setDeleteId] = useState<number | null>(null);
+
+    const handleDeleteClick = (id: number) => {
+        setDeleteId(id);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!deleteId) return;
 
         try {
             const token = typeof (window as any) !== "undefined" ? (window as any).localStorage.getItem("token") : null;
-            const res = await fetch(`/api/properties/${id}`, {
+            const res = await fetch(`/api/properties/${deleteId}`, {
                 method: "DELETE",
                 headers: token ? { "Authorization": `Bearer ${token}` } : {}
             });
@@ -177,6 +186,8 @@ export default function PropertiesPage() {
                 description: "An error occurred",
                 variant: "destructive",
             });
+        } finally {
+            setDeleteId(null);
         }
     };
 
@@ -343,13 +354,13 @@ export default function PropertiesPage() {
                                         </div>
 
                                         <div className="flex flex-col gap-2">
-                                            {/* Show Edit/Delete if it's "My Properties" OR user owns it */}
-                                            {(filter === "my" || (currentUserId && property.createdById === currentUserId)) ? (
+                                            {/* Show Edit/Delete if it's "My Properties" OR user owns it OR is Admin */}
+                                            {(filter === "my" || (currentUserId && property.createdById === currentUserId) || currentUserRole === "Admin") ? (
                                                 <div className="flex gap-1">
                                                     <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setEditProperty(property)}>
-                                                        <Plus className="h-4 w-4 rotate-45" /> {/* Use as edit icon or similar */}
+                                                        <SlidersHorizontal className="h-4 w-4" />
                                                     </Button>
-                                                    <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => handleDelete(property.id)}>
+                                                    <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => handleDeleteClick(property.id)}>
                                                         <Plus className="h-4 w-4 rotate-45" />
                                                     </Button>
                                                 </div>
@@ -450,6 +461,14 @@ export default function PropertiesPage() {
                     property={rentProperty}
                 />
             )}
+
+            <DeleteConfirmationModal
+                isOpen={!!deleteId}
+                onClose={() => setDeleteId(null)}
+                onConfirm={handleConfirmDelete}
+                title="Delete Property"
+                description="Are you sure you want to delete this property? This action cannot be undone."
+            />
         </div>
     );
 }

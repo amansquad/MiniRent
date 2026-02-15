@@ -47,11 +47,11 @@ public class RentalCreateDto
     public DateTime StartDate { get; set; }
     
     [Required]
-    [Range(0, 100000)]
+    [Range(0, 10000000)]
     public decimal Deposit { get; set; }
     
     [Required]
-    [Range(0, 100000)]
+    [Range(0, 10000000)]
     public decimal MonthlyRent { get; set; }
     
     [MaxLength(1000)]
