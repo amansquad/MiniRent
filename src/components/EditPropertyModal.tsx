@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface EditPropertyModalProps {
     isOpen: boolean;
@@ -20,7 +21,8 @@ export function EditPropertyModal({ isOpen, onClose, property }: EditPropertyMod
         bedrooms: "",
         floor: "",
         monthlyRent: "",
-        description: ""
+        description: "",
+        status: ""
     });
 
     useEffect(() => {
@@ -31,7 +33,8 @@ export function EditPropertyModal({ isOpen, onClose, property }: EditPropertyMod
                 bedrooms: property.bedrooms?.toString() || "",
                 floor: property.floor?.toString() || "",
                 monthlyRent: property.monthlyRent?.toString() || "",
-                description: property.description || ""
+                description: property.description || "",
+                status: property.status || "Available"
             });
         }
     }, [property]);
@@ -40,6 +43,10 @@ export function EditPropertyModal({ isOpen, onClose, property }: EditPropertyMod
         const target = e.target as any;
         const { id, value } = target;
         setFormData(prev => ({ ...prev, [id]: value }));
+    };
+
+    const handleStatusChange = (value: string) => {
+        setFormData(prev => ({ ...prev, status: value }));
     };
 
     const onSubmit = async (e: React.FormEvent) => {
@@ -90,6 +97,25 @@ export function EditPropertyModal({ isOpen, onClose, property }: EditPropertyMod
                             Address
                         </Label>
                         <Input id="address" value={formData.address} onChange={handleChange} className="col-span-3" required />
+                    </div>
+
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="status" className="text-right">
+                            Status
+                        </Label>
+                        <div className="col-span-3">
+                            <Select value={formData.status} onValueChange={handleStatusChange}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Available">Available</SelectItem>
+                                    <SelectItem value="Rented">Rented</SelectItem>
+                                    <SelectItem value="Reserved">Reserved</SelectItem>
+                                    <SelectItem value="Maintenance">Maintenance</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-4 items-center gap-4">

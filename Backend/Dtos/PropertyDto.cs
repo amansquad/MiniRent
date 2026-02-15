@@ -50,6 +50,7 @@ public class PropertyCreateDto
 public class PropertyUpdateDto : PropertyCreateDto
 {
     public int Id { get; set; }
+    public string? Status { get; set; }
 }
 
 public class PropertyFilterDto

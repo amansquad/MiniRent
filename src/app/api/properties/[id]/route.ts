@@ -23,7 +23,12 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
 export async function PUT(request: Request, context: { params: Promise<{ id: string }> }) {
     const { id } = await context.params;
     const token = request.headers.get("authorization") || "";
-    const body = await request.json();
+    let body;
+    try {
+        body = await request.json();
+    } catch (e) {
+        return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
 
     const res = await fetch(`http://127.0.0.1:5000/api/properties/${id}`, {
         method: "PUT",

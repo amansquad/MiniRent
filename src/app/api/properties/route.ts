@@ -3,8 +3,7 @@ import { NextResponse } from "next/server";
 export async function GET(request: Request) {
     // Proxy to backend with JWT
     const { searchParams } = new URL(request.url);
-    const mode = searchParams.get("mode");
-    const query = mode ? `?mode=${mode}` : "";
+    const query = searchParams.toString() ? `?${searchParams.toString()}` : "";
 
     const token = request.headers.get("authorization") || "";
     const res = await fetch(`http://127.0.0.1:5000/api/properties${query}`, {

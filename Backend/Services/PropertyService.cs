@@ -62,6 +62,8 @@ public class PropertyService : IPropertyService
             query = query.Where(p => p.Address.Contains(filter.SearchAddress));
         }
 
+        Console.WriteLine($"DEBUG SORT: SortBy={filter.SortBy}, SortOrder={filter.SortOrder}");
+
         // Apply sorting
         query = filter.SortBy?.ToLower() switch
         {

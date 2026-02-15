@@ -36,6 +36,9 @@ public class AutoMapperProfile : Profile
             
         CreateMap<PropertyUpdateDto, Property>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.Status, opt => opt.MapFrom((src, dest) => 
+                !string.IsNullOrEmpty(src.Status) && Enum.TryParse<PropertyStatus>(src.Status, true, out var status) 
+                ? status : dest.Status))
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedById, opt => opt.Ignore())
             .ForMember(dest => dest.IsDeleted, opt => opt.Ignore());

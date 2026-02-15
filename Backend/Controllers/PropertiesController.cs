@@ -19,8 +19,33 @@ public class PropertiesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetProperties([FromQuery] PropertyFilterDto filter, [FromQuery] string? mode = null)
+    public async Task<IActionResult> GetProperties(
+        [FromQuery] string? status,
+        [FromQuery] int? minBedrooms,
+        [FromQuery] int? maxBedrooms,
+        [FromQuery] decimal? minRent,
+        [FromQuery] decimal? maxRent,
+        [FromQuery] string? searchAddress,
+        [FromQuery] string? sortBy,
+        [FromQuery] string? sortOrder,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? mode = null)
     {
+        var filter = new PropertyFilterDto
+        {
+            Status = status,
+            MinBedrooms = minBedrooms,
+            MaxBedrooms = maxBedrooms,
+            MinRent = minRent,
+            MaxRent = maxRent,
+            SearchAddress = searchAddress,
+            SortBy = sortBy,
+            SortOrder = sortOrder,
+            Page = page,
+            PageSize = pageSize
+        };
+
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
         var roleClaim = User.FindFirst(ClaimTypes.Role) ?? User.FindFirst("role");
         int? userId = userIdClaim != null ? int.Parse(userIdClaim.Value) : null;
@@ -90,7 +115,6 @@ public class PropertiesController : ControllerBase
         var roleClaim = User.FindFirst(ClaimTypes.Role) ?? User.FindFirst("role");
         bool isAdmin = roleClaim?.Value == "Admin";
         updateDto.Id = id;
-
         var property = await _propertyService.UpdatePropertyAsync(updateDto, userId, isAdmin);
 
         if (property == null)
