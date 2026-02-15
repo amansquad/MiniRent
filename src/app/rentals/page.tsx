@@ -5,6 +5,11 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { EndRentalModal } from "@/components/EndRentalModal";
+import { Calendar, User, Phone, Mail, Info, CheckCircle2, XCircle, Ban, Clock } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
+import { getUser } from "@/lib/auth";
 
 export default function RentalsPage() {
     const [rentals, setRentals] = useState<any[]>([]);
@@ -14,47 +19,31 @@ export default function RentalsPage() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [currentUserId, setCurrentUserId] = useState<number | null>(null);
     const [highlightedId, setHighlightedId] = useState<number | null>(null);
+    const [endRental, setEndRental] = useState<any | null>(null);
     const { toast } = useToast();
 
     useEffect(() => {
-        if (typeof (window as any) === "undefined") return;
-
-        const token = (window as any).localStorage.getItem("token");
-        setIsLoggedIn(!!token);
-
-        if (token) {
-            try {
-                const base64Url = token.split('.')[1];
-                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                const jsonPayload = decodeURIComponent((window as any).atob(base64).split('').map(function (c: string) {
-                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                }).join(''));
-                const payload = JSON.parse(jsonPayload);
-                if (payload.nameid) setCurrentUserId(parseInt(payload.nameid));
-
-                const userStr = (window as any).localStorage.getItem("user");
-                if (userStr) {
-                    const user = JSON.parse(userStr);
-                    if (user.id) setCurrentUserId(user.id);
-                }
-            } catch (e) {
-                console.error("Error parsing token", e);
-            }
+        const user = getUser();
+        if (user) {
+            setIsLoggedIn(true);
+            setCurrentUserId(user.id);
         }
 
         // Check for highlighting
-        const params = new URLSearchParams((window as any).location.search);
-        const idParam = params.get("id");
-        if (idParam) {
-            setHighlightedId(parseInt(idParam));
-            setTimeout(() => setHighlightedId(null), 3000);
+        if (typeof (window as any) !== "undefined") {
+            const params = new URLSearchParams((window as any).location.search);
+            const idParam = params.get("id");
+            if (idParam) {
+                setHighlightedId(parseInt(idParam));
+                setTimeout(() => setHighlightedId(null), 3000);
+            }
         }
 
         fetchRentals();
     }, [filter]);
 
     const fetchRentals = () => {
-        const token = (window as any).localStorage.getItem("token");
+        const token = typeof (window as any) !== "undefined" ? (window as any).localStorage.getItem("token") : null;
         const query = filter === "my" ? "?mode=my" : "";
         setLoading(true);
         fetch(`/api/rentals${query}`, {
@@ -81,7 +70,7 @@ export default function RentalsPage() {
 
     const handleStatusUpdate = async (id: number, status: string) => {
         try {
-            const token = (window as any).localStorage.getItem("token");
+            const token = typeof (window as any) !== "undefined" ? (window as any).localStorage.getItem("token") : null;
             const res = await fetch(`/api/rentals/${id}/status`, {
                 method: "PUT",
                 headers: {
@@ -151,53 +140,109 @@ export default function RentalsPage() {
                             <Card
                                 key={rental.id}
                                 className={cn(
-                                    "p-4 flex flex-col justify-between transition-all duration-500",
+                                    "p-0 overflow-hidden flex flex-col transition-all duration-500",
                                     highlightedId === rental.id && "border-primary border-2 shadow-lg ring-2 ring-primary/20 scale-[1.02]"
                                 )}
                                 id={`rental-${rental.id}`}
                             >
-                                <div>
-                                    <div className="flex justify-between items-start mb-2">
-                                        <div className="font-semibold text-lg">{rental.propertyAddress}</div>
-                                        <div className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-bold ${rental.status === "Active" ? "bg-green-100 text-green-700" :
-                                            rental.status === "Pending" ? "bg-yellow-100 text-yellow-700" :
-                                                rental.status === "Rejected" ? "bg-red-100 text-red-700" :
-                                                    "bg-gray-100 text-gray-700"
-                                            }`}>
+                                <div className="p-5 flex-1 space-y-4">
+                                    <div className="flex justify-between items-start">
+                                        <div className="space-y-1">
+                                            <h3 className="font-bold text-lg leading-tight">{rental.propertyAddress}</h3>
+                                            <p className="text-primary font-medium flex items-center text-sm">
+                                                <User className="w-3.5 h-3.5 mr-1.5" />
+                                                {rental.tenantName}
+                                            </p>
+                                        </div>
+                                        <Badge
+                                            variant={rental.status === "Active" ? "default" : rental.status === "Pending" ? "secondary" : "outline"}
+                                            className={cn(
+                                                "uppercase text-[10px] h-5 px-1.5 font-bold tracking-wider",
+                                                rental.status === "Active" && "bg-green-100 text-green-700 hover:bg-green-100",
+                                                rental.status === "Rejected" && "bg-red-100 text-red-700 hover:bg-red-100"
+                                            )}
+                                        >
                                             {rental.status}
+                                        </Badge>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3 text-sm pt-2">
+                                        <div className="bg-muted/50 p-2 rounded-md">
+                                            <p className="text-[10px] text-muted-foreground uppercase font-bold mb-0.5">Monthly Rent</p>
+                                            <p className="font-semibold">${rental.monthlyRent}</p>
+                                        </div>
+                                        <div className="bg-muted/50 p-2 rounded-md">
+                                            <p className="text-[10px] text-muted-foreground uppercase font-bold mb-0.5">Start Date</p>
+                                            <p className="font-semibold">{new Date(rental.startDate).toLocaleDateString()}</p>
                                         </div>
                                     </div>
-                                    <div className="text-muted-foreground text-sm">Tenant: {rental.tenantName}</div>
-                                    <div className="text-muted-foreground text-sm">Rent: ${rental.monthlyRent}</div>
-                                    <div className="text-muted-foreground text-xs mt-2 italic flex justify-between">
-                                        <span>Owner: {rental.createdBy}</span>
-                                        <span>ID: {rental.id}</span>
+
+                                    <div className="flex items-center justify-between text-xs text-muted-foreground border-t pt-3">
+                                        <span className="flex items-center">
+                                            <User className="w-3 h-3 mr-1" />
+                                            {rental.createdBy}
+                                        </span>
+                                        <span>#{rental.id}</span>
                                     </div>
                                 </div>
 
-                                {rental.status === "Pending" && currentUserId && rental.ownerId === currentUserId && (
-                                    <div className="flex gap-2 mt-4">
-                                        <Button
-                                            size="sm"
-                                            className="flex-1 bg-green-600 hover:bg-green-700"
-                                            onClick={() => handleStatusUpdate(rental.id, "Active")}
-                                        >
-                                            Approve
-                                        </Button>
+                                {/* Action Buttons Footer */}
+                                <div className="p-3 bg-muted/20 border-t flex gap-2">
+                                    {rental.status === "Pending" && currentUserId && rental.ownerId === currentUserId && (
+                                        <>
+                                            <Button
+                                                size="sm"
+                                                className="flex-1 h-8 text-xs bg-green-600 hover:bg-green-700"
+                                                onClick={() => handleStatusUpdate(rental.id, "Active")}
+                                            >
+                                                <CheckCircle2 className="w-3 h-3 mr-1.5" />
+                                                Approve
+                                            </Button>
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                className="flex-1 h-8 text-xs text-red-600 border-red-200 hover:bg-red-50"
+                                                onClick={() => handleStatusUpdate(rental.id, "Rejected")}
+                                            >
+                                                <XCircle className="w-3 h-3 mr-1.5" />
+                                                Reject
+                                            </Button>
+                                        </>
+                                    )}
+
+                                    {rental.status === "Active" && currentUserId && rental.ownerId === currentUserId && (
                                         <Button
                                             size="sm"
                                             variant="destructive"
-                                            className="flex-1"
-                                            onClick={() => handleStatusUpdate(rental.id, "Rejected")}
+                                            className="flex-1 h-8 text-xs"
+                                            onClick={() => setEndRental(rental)}
                                         >
-                                            Reject
+                                            <Ban className="w-3 h-3 mr-1.5" />
+                                            End Rental
                                         </Button>
-                                    </div>
-                                )}
+                                    )}
+
+                                    <Button variant="ghost" size="sm" className="flex-1 h-8 text-xs" asChild>
+                                        <Link href={`/properties/${rental.propertyId}`}>
+                                            <Info className="w-3 h-3 mr-1.5" />
+                                            Property
+                                        </Link>
+                                    </Button>
+                                </div>
                             </Card>
                         ))}
                     </div>
                 )
+            )}
+
+            {endRental && (
+                <EndRentalModal
+                    isOpen={!!endRental}
+                    onClose={() => setEndRental(null)}
+                    rentalId={endRental.id}
+                    propertyAddress={endRental.propertyAddress}
+                    onSuccess={fetchRentals}
+                />
             )}
         </div>
     );

@@ -153,3 +153,4 @@
 /home/kali/Documents/MiniRent/Backend/obj/Debug/net8.0/MiniRent.Backend.pdb
 /home/kali/Documents/MiniRent/Backend/obj/Debug/net8.0/MiniRent.Backend.genruntimeconfig.cache
 /home/kali/Documents/MiniRent/Backend/obj/Debug/net8.0/ref/MiniRent.Backend.dll
+/home/kali/Documents/MiniRent/Backend/obj/Debug/net8.0/MiniRent.Backend.sourcelink.json

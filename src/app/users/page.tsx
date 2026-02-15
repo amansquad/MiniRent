@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
+import DeleteUserModal from "@/components/DeleteUserModal";
 
 export default function UsersPage() {
     const [users, setUsers] = useState<any[]>([]);
@@ -12,6 +13,7 @@ export default function UsersPage() {
     const [editingUser, setEditingUser] = useState<any>(null);
     const [newUser, setNewUser] = useState({ fullName: "", username: "", password: "", email: "", phone: "", role: "Agent" });
     const [editFormData, setEditFormData] = useState({ fullName: "", email: "", phone: "", role: "", isActive: true });
+    const [userToDelete, setUserToDelete] = useState<any>(null);
 
     useEffect(() => {
         if (typeof window === "undefined") return;
@@ -150,17 +152,13 @@ export default function UsersPage() {
         }
     };
 
-    const handleDeleteUser = async (userId: number) => {
-        if (!confirm("Are you sure you want to delete this user? This will deactivate their account.")) {
-            return;
-        }
-
-        if (typeof window === "undefined") return;
+    const handleDeleteUser = async () => {
+        if (!userToDelete || typeof window === "undefined") return;
 
         try {
             setError("");
             const token = localStorage.getItem("token");
-            const res = await fetch(`/api/users/${userId}`, {
+            const res = await fetch(`/api/users/${userToDelete.id}`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
@@ -181,6 +179,7 @@ export default function UsersPage() {
             const refreshData = await refreshRes.json();
             const refreshUsers = Array.isArray(refreshData) ? refreshData : refreshData.data;
             setUsers(refreshUsers || []);
+            setUserToDelete(null);
         } catch (err: any) {
             setError(err.message ?? String(err));
         }
@@ -366,7 +365,7 @@ export default function UsersPage() {
                                             Edit
                                         </button>
                                         <button
-                                            onClick={() => handleDeleteUser(user.id)}
+                                            onClick={() => setUserToDelete(user)}
                                             className="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700"
                                         >
                                             Delete
@@ -378,6 +377,14 @@ export default function UsersPage() {
                     </div>
                 )
             )}
+
+            <DeleteUserModal
+                isOpen={!!userToDelete}
+                onClose={() => setUserToDelete(null)}
+                onConfirm={handleDeleteUser}
+                userName={userToDelete?.fullName || ""}
+                userEmail={userToDelete?.email || "No email"}
+            />
         </div>
     );
 }

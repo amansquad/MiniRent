@@ -4,7 +4,8 @@ import { useEffect, useState, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, MessageSquareReply, Send } from "lucide-react";
+import { Loader2, MessageSquareReply, Send, Eye } from "lucide-react";
+import Link from "next/link";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
@@ -15,6 +16,7 @@ export default function InquiriesPage() {
     const [inquiries, setInquiries] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [filter, setFilter] = useState<"received" | "sent">("received");
     const { toast } = useToast();
     const [currentUserId, setCurrentUserId] = useState<number | null>(null);
     const [replies, setReplies] = useState<{ [key: number]: string }>({});
@@ -25,7 +27,7 @@ export default function InquiriesPage() {
         setLoading(true);
         try {
             const token = typeof (window as any) !== "undefined" ? (window as any).localStorage.getItem("token") : null;
-            const res = await fetch("/api/inquiries", {
+            const res = await fetch(`/api/inquiries?mode=${filter}`, {
                 headers: token ? { "Authorization": `Bearer ${token}` } : {}
             });
 
@@ -71,7 +73,7 @@ export default function InquiriesPage() {
         }
 
         fetchInquiries();
-    }, [fetchInquiries]);
+    }, [fetchInquiries, filter]);
 
     const handleStatusUpdate = async (id: number, status: string, ownerReply?: string) => {
         setSubmitting(prev => ({ ...prev, [id]: true }));
@@ -119,7 +121,23 @@ export default function InquiriesPage() {
 
     return (
         <div className="p-8">
-            <h1 className="text-2xl font-bold mb-8">Inquiries</h1>
+            <div className="flex justify-between items-center mb-8">
+                <h1 className="text-2xl font-bold">Inquiries</h1>
+                <div className="flex bg-muted rounded-lg p-1">
+                    <button
+                        className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${filter === "received" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                        onClick={() => setFilter("received")}
+                    >
+                        Received
+                    </button>
+                    <button
+                        className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${filter === "sent" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                        onClick={() => setFilter("sent")}
+                    >
+                        Sent
+                    </button>
+                </div>
+            </div>
             {loading ? (
                 <div className="flex justify-center p-12">
                     <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -151,9 +169,19 @@ export default function InquiriesPage() {
                                     <Badge className={getStatusColor(inquiry.status)}>{inquiry.status}</Badge>
                                 </div>
 
-                                <div>
-                                    <p className="text-xs font-medium uppercase text-muted-foreground">About Property</p>
-                                    <p className="font-medium text-primary">{inquiry.propertyAddress || "General Inquiry"}</p>
+                                <div className="flex justify-between items-end">
+                                    <div className="flex-1">
+                                        <p className="text-xs font-medium uppercase text-muted-foreground">About Property</p>
+                                        <p className="font-medium text-primary">{inquiry.propertyAddress || "General Inquiry"}</p>
+                                    </div>
+                                    {inquiry.propertyId && (
+                                        <Button variant="ghost" size="sm" className="h-7 text-[10px] px-2" asChild>
+                                            <Link href={`/properties/${inquiry.propertyId}`}>
+                                                <Eye className="w-3 h-3 mr-1" />
+                                                View Property
+                                            </Link>
+                                        </Button>
+                                    )}
                                 </div>
 
                                 {inquiry.message && (
