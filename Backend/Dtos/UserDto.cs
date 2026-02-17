@@ -4,7 +4,7 @@ namespace MiniRent.Backend.Dtos;
 
 public class UserDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string Username { get; set; } = string.Empty;
     public string FullName { get; set; } = string.Empty;
     public string Role { get; set; } = string.Empty;
@@ -18,22 +18,42 @@ public class UserDto
     public string Phone { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// Data transfer object for user registration.
+/// </summary>
 public class RegisterUserDto
 {
+    [Required]
+    [StringLength(50, MinimumLength = 3)]
     public string Username { get; set; } = string.Empty;
+
+    [Required]
+    [StringLength(100, MinimumLength = 6)]
     public string Password { get; set; } = string.Empty;
+
+    [Required]
     public string FullName { get; set; } = string.Empty;
+
     public string Role { get; set; } = string.Empty;
+
+    [Required]
+    [EmailAddress]
     public string Email { get; set; } = string.Empty;
 
-    [StringLength(10)]
-    [RegularExpression(@"^\d{0,10}$", ErrorMessage = "Phone number must be up to 10 digits.")]
+    [StringLength(15)]
+    [RegularExpression(@"^\+?(\d{1,3})?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?$", ErrorMessage = "Invalid phone number format.")]
     public string Phone { get; set; } = string.Empty;
 }
 
+/// <summary>
+/// Data transfer object for user login.
+/// </summary>
 public class LoginDto
 {
+    [Required]
     public string Username { get; set; } = string.Empty;
+
+    [Required]
     public string Password { get; set; } = string.Empty;
 }
 
@@ -47,16 +67,20 @@ public class LoginResponseDto
 public class CheckUsernameDto
 {
     public string Username { get; set; } = string.Empty;
-    public int? ExcludeUserId { get; set; }
+    public Guid? ExcludeUserId { get; set; }
 }
 
 public class UpdateUserDto
 {
+    [Required]
     public string FullName { get; set; } = string.Empty;
+
+    [Required]
+    [EmailAddress]
     public string Email { get; set; } = string.Empty;
 
-    [StringLength(10)]
-    [RegularExpression(@"^\d{0,10}$", ErrorMessage = "Phone number must be up to 10 digits.")]
+    [StringLength(15)]
+    [RegularExpression(@"^\+?(\d{1,3})?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?$", ErrorMessage = "Invalid phone number format.")]
     public string Phone { get; set; } = string.Empty;
 }
 

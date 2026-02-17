@@ -11,10 +11,12 @@ namespace MiniRent.Backend.Controllers;
 public class SearchController : ControllerBase
 {
     private readonly ISearchService _searchService;
+    private readonly ILogger<SearchController> _logger;
 
-    public SearchController(ISearchService searchService)
+    public SearchController(ISearchService searchService, ILogger<SearchController> logger)
     {
         _searchService = searchService;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -22,7 +24,7 @@ public class SearchController : ControllerBase
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
         var roleClaim = User.FindFirst(ClaimTypes.Role);
-        int? userId = userIdClaim != null ? int.Parse(userIdClaim.Value) : null;
+        Guid? userId = userIdClaim != null ? Guid.Parse(userIdClaim.Value) : null;
         bool isAdmin = roleClaim?.Value == "Admin";
 
         var results = await _searchService.SearchAsync(q, userId, isAdmin);

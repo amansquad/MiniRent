@@ -10,7 +10,7 @@ import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Property {
-    id: number;
+    id: string;
     address: string;
     monthlyRent: number;
 }
@@ -49,7 +49,7 @@ export function AddRentalModal({ isOpen, onClose, property }: AddRentalModalProp
 
         setLoading(true);
         setError("");
-        const token = typeof (window as any) !== "undefined" ? ((window as any).localStorage.getItem)("token") : null;
+        const token = (typeof (window as any) !== "undefined") ? (window as any).localStorage.getItem("token") : null;
 
         try {
             const payload = {

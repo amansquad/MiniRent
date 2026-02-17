@@ -5,8 +5,8 @@ namespace MiniRent.Backend.Services.Interfaces;
 public interface IAuthService
 {
     Task<LoginResponseDto?> LoginAsync(LoginDto loginDto);
-    Task<UserDto?> RegisterAsync(RegisterUserDto registerDto, int currentUserId);
-    Task<UserDto?> GetCurrentUserAsync(int userId);
-    Task<UserDto?> UpdateProfileAsync(int userId, UpdateUserDto updateDto);
-    Task<bool> IsUsernameUniqueAsync(string username, int? excludeUserId = null);
+    Task<UserDto?> RegisterAsync(RegisterUserDto registerDto, Guid currentUserId);
+    Task<UserDto?> GetCurrentUserAsync(Guid userId);
+    Task<UserDto?> UpdateProfileAsync(Guid userId, UpdateUserDto updateDto);
+    Task<bool> IsUsernameUniqueAsync(string username, Guid? excludeUserId = null);
 }

@@ -11,95 +11,101 @@ MiniRent is a comprehensive property rental management system designed to stream
 - **State Management**: Zustand
 - **Icons**: Lucide React
 - **Animations**: Framer Motion
-- **Notifications**: Sonner / Shadcn Toast
 
 ### Backend
 - **Framework**: ASP.NET Core 8.0
-- **Database**: PostgreSQL
+- **Database**: MS SQL Server (with GUID IDs)
 - **ORM**: Entity Framework Core
 - **Mapping**: AutoMapper
 - **Authentication**: JWT (JSON Web Tokens)
-- **Hashing**: BCrypt.net
+- **Documentation**: Swagger/OpenAPI with XML Comments
 
-## ✨ Key Features
+## 📺 Feature Tour (Demo)
 
-- **Property Management**: Complete CRUD operations for properties with rich details (address, area, bedrooms, floor, rent).
-- **Rental Lifecycle**: 
-    - Automatic status transitions (Available ↔ Rented).
-    - Manual overrides for "Reserved" and "Maintenance" statuses.
-    - Rental history tracking for each property.
-- **Inquiry System**: Tenants can send inquiries; owners can reply directly from their dashboard.
-- **Advanced Search**: Global search with highlighting and deep linking to specific properties, rentals, or inquiries.
-- **Smart Filtering**: Filter by status, price range, bedrooms, and address keyword.
-- **Role-Based Access**: 
-    - **Users**: Manage their own properties, rentals, and inquiries.
-    - **Admins**: Full control over all properties, rentals, and users.
+### 🏘️ Property Discovery
+- **Modern Landing Page**: Vibrant hero section and featured properties with smooth micro-animations.
+- **Advanced Search Bar**: Global search enabled across properties, tenants, and inquiries.
+- **Interactive Map**: View property locations and neighborhood details.
 
-## 📂 Project Structure
+### 💼 Management Dashboard
+- **Owner Dashboard**: Track monthly revenue, active rentals, and pending inquiries in a unified view.
+- **Rental History**: View a complete timeline of previous tenants and payments for any listing.
+- **Inquiry Handling**: Direct messaging system for quick communication between owners and prospective tenants.
 
-```text
-MiniRent/
-├── Backend/                 # ASP.NET Core Web API
-│   ├── Controllers/         # API Endpoints
-│   ├── Data/                # DbContext and Migrations
-│   ├── Dtos/                # Data Transfer Objects
-│   ├── Models/              # EF Core Entities
-│   ├── Services/            # Business Logic
-│   └── Program.cs           # App Configuration
-├── src/                     # Next.js Frontend
-│   ├── app/                 # Routes and API Handlers
-│   ├── components/          # Reusable UI Components
-│   └── lib/                 # Utilities and Hooks
-├── public/                  # Static Assets
-└── package.json             # Frontend Dependencies & Scripts
-```
+### 🔒 Security & Performance
+- **Role-Based Access**: Specialized views for Admins, Agents, and Tenants.
+- **Global Error Handling**: Standardized API responses with structured logging.
+- **High Performance**: Optimized with response caching and Brotli/Gzip compression.
 
 ## 🛠️ Getting Started
 
 ### Prerequisites
-- Node.js (v18+)
-- .NET 8.0 SDK
-- PostgreSQL
+- [Node.js](https://nodejs.org/) (v18+)
+- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- [MS SQL Server](https://www.microsoft.com/en-us/sql-server/sql-server-downloads)
 
-### Setup Instructions
+### 1. Database Setup
+The system uses MS SQL Server and string-based GUIDs for all IDs.
+- Ensure SQL Server is running.
+- The backend will automatically apply migrations and seed initial data on the first run.
 
-1. **Clone the Repository**
-   ```bash
-   git clone <repository-url>
-   cd MiniRent
-   ```
+### 2. Backend Configuration
+Create or update `Backend/appsettings.json`:
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=localhost;Database=MiniRent;User Id=sa;Password=your_password;TrustServerCertificate=True"
+  },
+  "JwtSettings": {
+    "SecretKey": "YOUR_SUPER_SECRET_KEY_HERE",
+    "Issuer": "MiniRent",
+    "Audience": "MiniRentUsers"
+  }
+}
+```
 
-2. **Database Configuration**
-   Update the connection string in `Backend/appsettings.json`:
-   ```json
-   "ConnectionStrings": {
-     "DefaultConnection": "Host=localhost;Database=MiniRent;Username=postgres;Password=your_password"
-   }
-   ```
+### 3. Frontend Configuration
+Create a `.env.local` file in the root directory:
+```env
+NEXT_PUBLIC_API_URL=http://localhost:5000
+NEXT_PUBLIC_APP_NAME="MiniRent"
+```
 
-3. **Backend Setup**
-   ```bash
-   cd Backend
-   dotnet restore
-   dotnet ef database update
-   dotnet run
-   ```
+### 4. Running the Application
 
-4. **Frontend Setup**
-   ```bash
-   # From the root directory
-   npm install
-   npm run dev
-   ```
+**Backend:**
+```bash
+cd Backend
+dotnet restore
+dotnet ef database update
+dotnet run
+```
+*The API will be available at `http://localhost:5000`*
 
-## 📜 Usage
+**Frontend:**
+```bash
+# From the root directory
+npm install
+npm run dev
+```
+*The Web App will be available at `http://localhost:3000` (or `5173`)*
 
-- **Default Admin Login**:
-  - **Username**: `admin`
-  - **Password**: `admin123`
-- The system will automatically seed an admin account if the database is empty.
-- Use the **Global Search** in the navbar to find any item by ID or keyword.
-- Access **My Properties** to manage your listings and view rental requests.
+## 📖 API Documentation
+MiniRent includes a professional Swagger UI with detailed endpoint descriptions and schema models.
+- **Swagger UI**: Visit `http://localhost:5000/swagger` when the backend is running.
+- **XML Comments**: All core endpoints are documented with parameters and return types.
 
-## 📄 License
-MIT License
+## 🧪 Quality Assurance
+We maintain a high standard of code quality with automated tests.
+- **Unit Tests**: Powered by xUnit, Moq, and FluentAssertions.
+- **Run Tests**:
+  ```bash
+  dotnet test Tests/Tests.csproj
+  ```
+
+## 📜 Default Credentials
+- **Username**: `admin`
+- **Password**: `admin123`
+- *Note: These are automatically seeded for development environments.*
+
+

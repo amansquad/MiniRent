@@ -23,7 +23,10 @@ public class AutoMapperProfile : Profile
         CreateMap<Property, PropertyDto>()
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
             .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedBy != null ? src.CreatedBy.FullName : ""))
-            .ForMember(dest => dest.RecentRentals, opt => opt.MapFrom(src => src.RentalHistory.OrderByDescending(r => r.CreatedAt).Take(3)));
+            .ForMember(dest => dest.RecentRentals, opt => opt.MapFrom(src => src.RentalHistory.OrderByDescending(r => r.CreatedAt).Take(3)))
+            .ForMember(dest => dest.Images, opt => opt.MapFrom(src => src.Images))
+            .ForMember(dest => dest.Amenities, opt => opt.MapFrom(src => src.Amenities))
+            .ForMember(dest => dest.Reviews, opt => opt.MapFrom(src => src.Reviews));
             
         CreateMap<PropertyCreateDto, Property>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
@@ -48,7 +51,9 @@ public class AutoMapperProfile : Profile
             .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()))
             .ForMember(dest => dest.PropertyAddress, opt => opt.MapFrom(src => src.Property.Address))
             .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedBy != null ? src.CreatedBy.FullName : ""))
-            .ForMember(dest => dest.OwnerId, opt => opt.MapFrom(src => src.Property.CreatedById));
+            .ForMember(dest => dest.OwnerId, opt => opt.MapFrom(src => src.Property.CreatedById))
+            .ForMember(dest => dest.TenantName, opt => opt.MapFrom(src => src.Tenant != null ? src.Tenant.FullName : src.TenantName))
+            .ForMember(dest => dest.Payments, opt => opt.MapFrom(src => src.Payments));
             
         CreateMap<RentalCreateDto, RentalRecord>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
@@ -62,7 +67,7 @@ public class AutoMapperProfile : Profile
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.PropertyId, opt => opt.Ignore())
             .ForMember(dest => dest.StartDate, opt => opt.Ignore())
-            .ForMember(dest => dest.Deposit, opt => opt.Ignore())
+            .ForMember(dest => dest.SecurityDeposit, opt => opt.Ignore())
             .ForMember(dest => dest.MonthlyRent, opt => opt.Ignore())
             .ForMember(dest => dest.Status, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
@@ -94,5 +99,18 @@ public class AutoMapperProfile : Profile
             .ForMember(dest => dest.PropertyId, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedById, opt => opt.Ignore())
             .ForMember(dest => dest.Property, opt => opt.Ignore());
+
+        // New mappings
+        CreateMap<PropertyImage, PropertyImageDto>();
+        CreateMap<Payment, PaymentDto>()
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+
+        // New mappings for expanding schema
+        CreateMap<Amenity, AmenityDto>();
+        CreateMap<AmenityCreateDto, Amenity>();
+        
+        CreateMap<Review, ReviewDto>()
+            .ForMember(dest => dest.ReviewerName, opt => opt.MapFrom(src => src.Reviewer.FullName));
+        CreateMap<ReviewCreateDto, Review>();
     }
 }

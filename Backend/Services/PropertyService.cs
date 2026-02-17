@@ -18,19 +18,23 @@ public class PropertyService : IPropertyService
         _mapper = mapper;
     }
 
-    public async Task<(List<PropertyDto> Properties, int TotalCount)> GetPropertiesAsync(PropertyFilterDto filter, int? userId = null, bool isAdmin = false)
+    public async Task<(List<PropertyDto> Properties, int TotalCount)> GetPropertiesAsync(PropertyFilterDto filter, Guid? userId = null, bool isAdmin = false)
     {
         var query = _context.Properties
             .Include(p => p.CreatedBy)
             .Include(p => p.RentalHistory)
-            .Where(p => !p.IsDeleted);
+            .Include(p => p.Images)
+            .Include(p => p.Amenities)
+            .Include(p => p.Reviews)
+                .ThenInclude(r => r.Reviewer)
+            .Where(p => !p.IsDeleted)
+            .AsNoTracking();
 
         // If not admin, filter by user's own properties
         if (!isAdmin && userId.HasValue)
         {
             query = query.Where(p => p.CreatedById == userId.Value);
         }
-
         // Apply filters
         if (!string.IsNullOrEmpty(filter.Status) && Enum.TryParse<PropertyStatus>(filter.Status, true, out var status))
         {
@@ -74,7 +78,6 @@ public class PropertyService : IPropertyService
                 ? query.OrderByDescending(p => p.CreatedAt)
                 : query.OrderBy(p => p.CreatedAt)
         };
-
         var totalCount = await query.CountAsync();
 
         var properties = await query
@@ -85,13 +88,18 @@ public class PropertyService : IPropertyService
         return (_mapper.Map<List<PropertyDto>>(properties), totalCount);
     }
 
-    public async Task<PropertyDto?> GetPropertyByIdAsync(int id, int? userId = null, bool isAdmin = false)
+    public async Task<PropertyDto?> GetPropertyByIdAsync(Guid id, Guid? userId = null, bool isAdmin = false)
     {
         var query = _context.Properties
             .Include(p => p.CreatedBy)
+            .Include(p => p.Images)
+            .Include(p => p.Amenities)
+            .Include(p => p.Reviews)
+                .ThenInclude(r => r.Reviewer)
             .Include(p => p.RentalHistory)
                 .ThenInclude(r => r.CreatedBy)
-            .Where(p => p.Id == id && !p.IsDeleted);
+            .Where(p => p.Id == id && !p.IsDeleted)
+            .AsNoTracking();
 
         // If not admin, filter by user's own properties
         if (!isAdmin && userId.HasValue)
@@ -104,7 +112,7 @@ public class PropertyService : IPropertyService
         return property != null ? _mapper.Map<PropertyDto>(property) : null;
     }
 
-    public async Task<PropertyDto> CreatePropertyAsync(PropertyCreateDto createDto, int userId)
+    public async Task<PropertyDto> CreatePropertyAsync(PropertyCreateDto createDto, Guid userId)
     {
         var property = _mapper.Map<Property>(createDto);
         property.CreatedAt = DateTime.UtcNow;
@@ -116,13 +124,14 @@ public class PropertyService : IPropertyService
         // Reload with related data
         var createdProperty = await _context.Properties
             .Include(p => p.CreatedBy)
+            .Include(p => p.Images)
             .Include(p => p.RentalHistory)
             .FirstAsync(p => p.Id == property.Id);
 
         return _mapper.Map<PropertyDto>(createdProperty);
     }
 
-    public async Task<PropertyDto?> UpdatePropertyAsync(PropertyUpdateDto updateDto, int userId, bool isAdmin = false)
+    public async Task<PropertyDto?> UpdatePropertyAsync(PropertyUpdateDto updateDto, Guid userId, bool isAdmin = false)
     {
         var query = _context.Properties
             .Where(p => p.Id == updateDto.Id && !p.IsDeleted);
@@ -148,13 +157,14 @@ public class PropertyService : IPropertyService
         var updatedProperty = await _context.Properties
             .Include(p => p.CreatedBy)
             .Include(p => p.UpdatedBy)
+            .Include(p => p.Images)
             .Include(p => p.RentalHistory)
             .FirstAsync(p => p.Id == property.Id);
 
         return _mapper.Map<PropertyDto>(updatedProperty);
     }
 
-    public async Task<bool> DeletePropertyAsync(int id, int userId, bool isAdmin = false)
+    public async Task<bool> DeletePropertyAsync(Guid id, Guid userId, bool isAdmin = false)
     {
         var query = _context.Properties
             .Where(p => p.Id == id && !p.IsDeleted);
@@ -178,7 +188,7 @@ public class PropertyService : IPropertyService
         return true;
     }
 
-    public async Task<PropertyDto?> UpdatePropertyStatusAsync(int id, PropertyStatusUpdateDto statusDto, int userId, bool isAdmin = false)
+    public async Task<PropertyDto?> UpdatePropertyStatusAsync(Guid id, PropertyStatusUpdateDto statusDto, Guid userId, bool isAdmin = false)
     {
         var query = _context.Properties
             .Where(p => p.Id == id && !p.IsDeleted);
@@ -204,6 +214,7 @@ public class PropertyService : IPropertyService
         var updatedProperty = await _context.Properties
             .Include(p => p.CreatedBy)
             .Include(p => p.UpdatedBy)
+            .Include(p => p.Images)
             .Include(p => p.RentalHistory)
             .FirstAsync(p => p.Id == property.Id);
 

@@ -18,7 +18,7 @@ public class DashboardService : IDashboardService
         _mapper = mapper;
     }
 
-    public async Task<DashboardOverviewDto> GetDashboardOverviewAsync(int? userId = null, bool isAdmin = false)
+    public async Task<DashboardOverviewDto> GetDashboardOverviewAsync(Guid? userId = null, bool isAdmin = false)
     {
         var now = DateTime.UtcNow;
         // Ensure all DateTimes used in queries are UTC kinds,
@@ -27,9 +27,14 @@ public class DashboardService : IDashboardService
         var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddTicks(-1); // end of month, still UTC
 
         // Base queries
-        var propertiesQuery = _context.Properties.Where(p => !p.IsDeleted);
-        var rentalsQuery = _context.RentalRecords.Include(r => r.Property).AsQueryable();
-        var inquiriesQuery = _context.RentalInquiries.Include(i => i.Property).AsQueryable();
+        var propertiesQuery = _context.Properties
+            .Include(p => p.Images)
+            .Include(p => p.Amenities)
+            .Include(p => p.Reviews)
+            .Where(p => !p.IsDeleted)
+            .AsNoTracking();
+        var rentalsQuery = _context.RentalRecords.AsNoTracking().Include(r => r.Property).Include(r => r.Payments).AsQueryable();
+        var inquiriesQuery = _context.RentalInquiries.AsNoTracking().Include(i => i.Property).AsQueryable();
 
         // If not admin, filter by user's own data (created by user OR user's property)
         if (!isAdmin && userId.HasValue)
@@ -92,7 +97,9 @@ public class DashboardService : IDashboardService
         // Recent properties
         var recentPropertiesQuery = _context.Properties
             .Include(p => p.CreatedBy)
-            .Where(p => !p.IsDeleted && p.CreatedAt >= sevenDaysAgo);
+            .Include(p => p.Images)
+            .Where(p => !p.IsDeleted && p.CreatedAt >= sevenDaysAgo)
+            .AsNoTracking();
         
         if (!isAdmin && userId.HasValue)
         {
@@ -118,7 +125,9 @@ public class DashboardService : IDashboardService
         // Recent rentals
         var recentRentalsQuery = _context.RentalRecords
             .Include(r => r.CreatedBy)
-            .Where(r => r.CreatedAt >= sevenDaysAgo);
+            .Include(r => r.Payments)
+            .Where(r => r.CreatedAt >= sevenDaysAgo)
+            .AsNoTracking();
         
         if (!isAdmin && userId.HasValue)
         {
@@ -144,7 +153,8 @@ public class DashboardService : IDashboardService
         // Recent inquiries
         var recentInquiriesQuery = _context.RentalInquiries
             .Include(i => i.CreatedBy)
-            .Where(i => i.CreatedAt >= sevenDaysAgo);
+            .Where(i => i.CreatedAt >= sevenDaysAgo)
+            .AsNoTracking();
         
         if (!isAdmin && userId.HasValue)
         {
@@ -186,7 +196,7 @@ public class DashboardService : IDashboardService
         };
     }
 
-    public async Task<SearchResultDto> GlobalSearchAsync(GlobalSearchDto searchDto, int? userId = null, bool isAdmin = false)
+    public async Task<SearchResultDto> GlobalSearchAsync(GlobalSearchDto searchDto, Guid? userId = null, bool isAdmin = false)
     {
         var query = searchDto.Query.ToLower();
         var limit = Math.Min(searchDto.Limit, 20); // Cap at 20 results per type
@@ -196,6 +206,7 @@ public class DashboardService : IDashboardService
         // Search properties
         var propertiesQuery = _context.Properties
             .Include(p => p.CreatedBy)
+            .AsNoTracking()
             .Where(p => !p.IsDeleted &&
                        (p.Address.ToLower().Contains(query) ||
                         p.Description!.ToLower().Contains(query)));
@@ -216,6 +227,7 @@ public class DashboardService : IDashboardService
         var rentalsQuery = _context.RentalRecords
             .Include(r => r.Property)
             .Include(r => r.CreatedBy)
+            .AsNoTracking()
             .Where(r => r.TenantName.ToLower().Contains(query) ||
                         r.Property.Address.ToLower().Contains(query));
 
@@ -235,6 +247,7 @@ public class DashboardService : IDashboardService
         var inquiriesQuery = _context.RentalInquiries
             .Include(i => i.Property)
             .Include(i => i.CreatedBy)
+            .AsNoTracking()
             .Where(i => i.Name.ToLower().Contains(query) ||
                         i.Email.ToLower().Contains(query) ||
                         i.Phone.Contains(query));

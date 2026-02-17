@@ -18,10 +18,10 @@ export default function InquiriesPage() {
     const [error, setError] = useState("");
     const [filter, setFilter] = useState<"received" | "sent">("received");
     const { toast } = useToast();
-    const [currentUserId, setCurrentUserId] = useState<number | null>(null);
-    const [replies, setReplies] = useState<{ [key: number]: string }>({});
-    const [submitting, setSubmitting] = useState<{ [key: number]: boolean }>({});
-    const [highlightedId, setHighlightedId] = useState<number | null>(null);
+    const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+    const [replies, setReplies] = useState<{ [key: string]: string }>({});
+    const [submitting, setSubmitting] = useState<{ [key: string]: boolean }>({});
+    const [highlightedId, setHighlightedId] = useState<string | null>(null);
 
     const fetchInquiries = useCallback(async () => {
         setLoading(true);
@@ -65,7 +65,7 @@ export default function InquiriesPage() {
         const params = new URLSearchParams((window as any).location.search);
         const idParam = params.get("id");
         if (idParam) {
-            setHighlightedId(parseInt(idParam));
+            setHighlightedId(idParam);
             setTimeout(() => setHighlightedId(null), 3000);
 
             // Clear the param
@@ -75,7 +75,7 @@ export default function InquiriesPage() {
         fetchInquiries();
     }, [fetchInquiries, filter]);
 
-    const handleStatusUpdate = async (id: number, status: string, ownerReply?: string) => {
+    const handleStatusUpdate = async (id: string, status: string, ownerReply?: string) => {
         setSubmitting(prev => ({ ...prev, [id]: true }));
         try {
             const token = typeof (window as any) !== "undefined" ? (window as any).localStorage.getItem("token") : null;

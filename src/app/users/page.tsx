@@ -16,9 +16,9 @@ export default function UsersPage() {
     const [userToDelete, setUserToDelete] = useState<any>(null);
 
     useEffect(() => {
-        if (typeof window === "undefined") return;
+        if (typeof (window as any) === "undefined") return;
 
-        const storedUser = localStorage.getItem("user");
+        const storedUser = (window as any).localStorage.getItem("user");
         if (storedUser) {
             try {
                 const parsed = JSON.parse(storedUser);
@@ -26,7 +26,7 @@ export default function UsersPage() {
                     setIsAdmin(true);
                 } else {
                     // Redirect non-admins away from users page
-                    window.location.href = "/dashboard";
+                    (window as any).location.href = "/dashboard";
                     return;
                 }
             } catch {
@@ -34,17 +34,17 @@ export default function UsersPage() {
             }
         } else {
             // Not logged in, redirect to auth
-            window.location.href = "/auth";
+            (window as any).location.href = "/auth";
             return;
         }
 
-        const token = localStorage.getItem("token");
+        const token = (window as any).localStorage.getItem("token");
         fetch("/api/users", {
             headers: token ? { "Authorization": `Bearer ${token}` } : {}
         })
             .then(async (res) => {
                 if (res.status === 401) {
-                    window.location.href = "/auth?reason=login-required";
+                    (window as any).location.href = "/auth?reason=login-required";
                     return;
                 }
                 if (!res.ok) throw new Error("Failed to fetch users");
@@ -69,7 +69,7 @@ export default function UsersPage() {
         try {
             setCreating(true);
             setError("");
-            const token = localStorage.getItem("token");
+            const token = (window as any).localStorage.getItem("token");
             const res = await fetch("/api/auth/register", {
                 method: "POST",
                 headers: {
@@ -93,7 +93,7 @@ export default function UsersPage() {
 
             setNewUser({ fullName: "", username: "", password: "", email: "", phone: "", role: "Agent" });
             // Refresh the list
-            const token2 = localStorage.getItem("token");
+            const token2 = (window as any).localStorage.getItem("token");
             const refreshRes = await fetch("/api/users", {
                 headers: token2 ? { "Authorization": `Bearer ${token2}` } : {}
             });
@@ -123,7 +123,7 @@ export default function UsersPage() {
 
         try {
             setError("");
-            const token = localStorage.getItem("token");
+            const token = (window as any).localStorage.getItem("token");
             const res = await fetch(`/api/users/${editingUser.id}`, {
                 method: "PUT",
                 headers: {
@@ -140,7 +140,7 @@ export default function UsersPage() {
 
             setEditingUser(null);
             // Refresh the list
-            const token2 = localStorage.getItem("token");
+            const token2 = (window as any).localStorage.getItem("token");
             const refreshRes = await fetch("/api/users", {
                 headers: token2 ? { "Authorization": `Bearer ${token2}` } : {}
             });
@@ -157,7 +157,7 @@ export default function UsersPage() {
 
         try {
             setError("");
-            const token = localStorage.getItem("token");
+            const token = (window as any).localStorage.getItem("token");
             const res = await fetch(`/api/users/${userToDelete.id}`, {
                 method: "DELETE",
                 headers: {
@@ -172,7 +172,7 @@ export default function UsersPage() {
             }
 
             // Refresh the list
-            const token2 = localStorage.getItem("token");
+            const token2 = (window as any).localStorage.getItem("token");
             const refreshRes = await fetch("/api/users", {
                 headers: token2 ? { "Authorization": `Bearer ${token2}` } : {}
             });
@@ -201,7 +201,7 @@ export default function UsersPage() {
                                 type="text"
                                 className="w-full border rounded px-2 py-1"
                                 value={editFormData.fullName}
-                                onChange={(e) => setEditFormData({ ...editFormData, fullName: e.target.value })}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditFormData({ ...editFormData, fullName: e.target.value })}
                             />
                         </div>
                         <div>
@@ -210,7 +210,7 @@ export default function UsersPage() {
                                 type="email"
                                 className="w-full border rounded px-2 py-1"
                                 value={editFormData.email}
-                                onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditFormData({ ...editFormData, email: e.target.value })}
                             />
                         </div>
                         <div>
@@ -219,7 +219,7 @@ export default function UsersPage() {
                                 type="tel"
                                 className="w-full border rounded px-2 py-1"
                                 value={editFormData.phone}
-                                onChange={(e) => {
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                     const val = e.target.value.replace(/\D/g, '').slice(0, 10);
                                     setEditFormData({ ...editFormData, phone: val });
                                 }}
@@ -232,7 +232,7 @@ export default function UsersPage() {
                             <select
                                 className="w-full border rounded px-2 py-1"
                                 value={editFormData.role}
-                                onChange={(e) => setEditFormData({ ...editFormData, role: e.target.value })}
+                                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setEditFormData({ ...editFormData, role: e.target.value })}
                             >
                                 <option value="Agent">Agent</option>
                                 <option value="Admin">Admin</option>
@@ -318,7 +318,7 @@ export default function UsersPage() {
                             <select
                                 className="border rounded px-2 py-1 flex-1 min-w-[150px]"
                                 value={newUser.role}
-                                onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+                                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setNewUser({ ...newUser, role: e.target.value })}
                                 required
                             >
                                 <option value="Agent">Agent</option>

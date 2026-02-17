@@ -19,6 +19,7 @@ export function EditPropertyModal({ isOpen, onClose, property }: EditPropertyMod
         address: "",
         area: "",
         bedrooms: "",
+        bathrooms: "",
         floor: "",
         monthlyRent: "",
         description: "",
@@ -31,6 +32,7 @@ export function EditPropertyModal({ isOpen, onClose, property }: EditPropertyMod
                 address: property.address || "",
                 area: property.area?.toString() || "",
                 bedrooms: property.bedrooms?.toString() || "",
+                bathrooms: property.bathrooms?.toString() || "",
                 floor: property.floor?.toString() || "",
                 monthlyRent: property.monthlyRent?.toString() || "",
                 description: property.description || "",
@@ -52,13 +54,14 @@ export function EditPropertyModal({ isOpen, onClose, property }: EditPropertyMod
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
-        const token = localStorage.getItem("token");
+        const token = (window as any).localStorage.getItem("token");
 
         try {
             const payload = {
                 ...formData,
                 area: Number(formData.area),
                 bedrooms: Number(formData.bedrooms),
+                bathrooms: Number(formData.bathrooms),
                 floor: formData.floor ? Number(formData.floor) : null,
                 monthlyRent: Number(formData.monthlyRent)
             };
@@ -130,6 +133,13 @@ export function EditPropertyModal({ isOpen, onClose, property }: EditPropertyMod
                             Bedrooms
                         </Label>
                         <Input id="bedrooms" type="number" value={formData.bedrooms} onChange={handleChange} className="col-span-3" required />
+                    </div>
+
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="bathrooms" className="text-right">
+                            Bathrooms
+                        </Label>
+                        <Input id="bathrooms" type="number" step="0.5" value={formData.bathrooms} onChange={handleChange} className="col-span-3" required />
                     </div>
 
                     <div className="grid grid-cols-4 items-center gap-4">

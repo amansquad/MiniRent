@@ -4,11 +4,35 @@ namespace MiniRent.Backend.Models;
 
 public class Property
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     
     [Required]
     [MaxLength(200)]
+    public string Title { get; set; } = string.Empty;
+
+    [Required]
+    [MaxLength(200)]
     public string Address { get; set; } = string.Empty;
+
+    [Required]
+    [MaxLength(100)]
+    public string City { get; set; } = string.Empty;
+
+    [Required]
+    [MaxLength(100)]
+    public string State { get; set; } = string.Empty;
+
+    [Required]
+    [MaxLength(20)]
+    public string ZipCode { get; set; } = string.Empty;
+
+    [Required]
+    [MaxLength(100)]
+    public string Country { get; set; } = string.Empty;
+
+    [Required]
+    [MaxLength(50)]
+    public string PropertyType { get; set; } = string.Empty;
     
     [Required]
     [Range(1, 10000)]
@@ -17,6 +41,10 @@ public class Property
     [Required]
     [Range(1, 20)]
     public int Bedrooms { get; set; }
+
+    [Required]
+    [Range(0, 20)]
+    public double Bathrooms { get; set; }
     
     [Range(0, 50)]
     public int? Floor { get; set; }
@@ -36,14 +64,17 @@ public class Property
     public bool IsDeleted { get; set; } = false;
     
     // Navigation properties
-    public int? CreatedById { get; set; }
+    public Guid? CreatedById { get; set; }
     public User? CreatedBy { get; set; }
-    public int? UpdatedById { get; set; }
+    public Guid? UpdatedById { get; set; }
     public User? UpdatedBy { get; set; }
     
     // Collections
     public ICollection<RentalRecord> RentalHistory { get; set; } = new List<RentalRecord>();
     public ICollection<RentalInquiry> Inquiries { get; set; } = new List<RentalInquiry>();
+    public ICollection<PropertyImage> Images { get; set; } = new List<PropertyImage>();
+    public ICollection<Amenity> Amenities { get; set; } = new List<Amenity>();
+    public ICollection<Review> Reviews { get; set; } = new List<Review>();
 }
 
 public enum PropertyStatus

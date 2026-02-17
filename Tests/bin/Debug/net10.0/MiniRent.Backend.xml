@@ -1,0 +1,167 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>MiniRent.Backend</name>
+    </assembly>
+    <members>
+        <member name="M:MiniRent.Backend.Controllers.AuthController.SelfRegister(MiniRent.Backend.Dtos.RegisterUserDto)">
+            <summary>
+            Registers a new user with the Agent role.
+            </summary>
+            <param name="registerDto">The registration details.</param>
+            <returns>The created user details.</returns>
+        </member>
+        <member name="M:MiniRent.Backend.Controllers.AuthController.Login(MiniRent.Backend.Dtos.LoginDto)">
+            <summary>
+            Authenticates a user and returns a JWT token.
+            </summary>
+            <param name="loginDto">The login credentials.</param>
+            <returns>A token and user profile if successful.</returns>
+        </member>
+        <member name="M:MiniRent.Backend.Controllers.AuthController.GetCurrentUser">
+            <summary>
+            Gets the current authenticated user's profile.
+            </summary>
+            <returns>The user profile.</returns>
+        </member>
+        <member name="M:MiniRent.Backend.Controllers.InquiriesController.GetInquiries(MiniRent.Backend.Dtos.InquiryFilterDto)">
+            <summary>
+            Gets a paginated list of rental inquiries.
+            </summary>
+            <param name="filter">The inquiry filter criteria.</param>
+            <returns>A paginated list of inquiries.</returns>
+        </member>
+        <member name="M:MiniRent.Backend.Controllers.InquiriesController.CreateInquiry(MiniRent.Backend.Dtos.InquiryCreateDto)">
+            <summary>
+            Creates a new rental inquiry for a property.
+            </summary>
+            <param name="createDto">The inquiry details.</param>
+            <returns>The created inquiry.</returns>
+        </member>
+        <member name="M:MiniRent.Backend.Controllers.InquiriesController.DeleteInquiry(System.Guid)">
+            <summary>
+            Deletes an inquiry.
+            </summary>
+            <param name="id">The inquiry GUID.</param>
+            <returns>No content if successful.</returns>
+        </member>
+        <member name="M:MiniRent.Backend.Controllers.PropertiesController.GetProperties(System.String,System.Nullable{System.Int32},System.Nullable{System.Int32},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.String,System.String,System.String,System.Int32,System.Int32,System.String)">
+            <summary>
+            Gets a paginated list of properties with optional filtering.
+            </summary>
+            <param name="status">Filter by property status (Available, Rented, etc.).</param>
+            <param name="minBedrooms">Minimum number of bedrooms.</param>
+            <param name="maxBedrooms">Maximum number of bedrooms.</param>
+            <param name="minRent">Minimum monthly rent.</param>
+            <param name="maxRent">Maximum monthly rent.</param>
+            <param name="searchAddress">Search address by keyword.</param>
+            <param name="sortBy">Field to sort by (rent, date).</param>
+            <param name="sortOrder">Sort order (asc, desc).</param>
+            <param name="page">Page number.</param>
+            <param name="pageSize">Number of items per page.</param>
+            <param name="mode">"my" for user's owned properties, null for all.</param>
+            <returns>A paginated list of properties.</returns>
+        </member>
+        <member name="M:MiniRent.Backend.Controllers.PropertiesController.GetProperty(System.Guid)">
+            <summary>
+            Gets a specific property by its unique identifier.
+            </summary>
+            <param name="id">The property GUID.</param>
+            <returns>The property details if found.</returns>
+        </member>
+        <member name="M:MiniRent.Backend.Controllers.PropertiesController.CreateProperty(MiniRent.Backend.Dtos.PropertyCreateDto)">
+            <summary>
+            Creates a new property listing.
+            </summary>
+            <param name="createDto">The property details.</param>
+            <returns>The created property.</returns>
+        </member>
+        <member name="M:MiniRent.Backend.Controllers.PropertiesController.DeleteProperty(System.Guid)">
+            <summary>
+            Deletes a property listing. Only owners or admins can delete.
+            </summary>
+            <param name="id">The property GUID.</param>
+            <returns>No content if successful.</returns>
+        </member>
+        <member name="M:MiniRent.Backend.Controllers.RentalsController.GetRentals(MiniRent.Backend.Dtos.RentalFilterDto,System.String)">
+            <summary>
+            Gets a paginated list of rental records.
+            </summary>
+            <param name="filter">The rental filter criteria.</param>
+            <param name="mode">"my" for user's rentals, null for all.</param>
+            <returns>A paginated list of rentals.</returns>
+        </member>
+        <member name="M:MiniRent.Backend.Controllers.RentalsController.CreateRental(MiniRent.Backend.Dtos.RentalCreateDto)">
+            <summary>
+            Creates a new rental record.
+            </summary>
+            <param name="createDto">The rental details.</param>
+            <returns>The created rental record.</returns>
+        </member>
+        <member name="M:MiniRent.Backend.Controllers.RentalsController.DeleteRental(System.Guid)">
+            <summary>
+            Deletes a rental record.
+            </summary>
+            <param name="id">The rental GUID.</param>
+            <returns>No content if successful.</returns>
+        </member>
+        <member name="T:MiniRent.Backend.Dtos.RegisterUserDto">
+            <summary>
+            Data transfer object for user registration.
+            </summary>
+        </member>
+        <member name="T:MiniRent.Backend.Dtos.LoginDto">
+            <summary>
+            Data transfer object for user login.
+            </summary>
+        </member>
+        <member name="T:MiniRent.Backend.Migrations.InitialSqlServerFix">
+            <inheritdoc />
+        </member>
+        <member name="M:MiniRent.Backend.Migrations.InitialSqlServerFix.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:MiniRent.Backend.Migrations.InitialSqlServerFix.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:MiniRent.Backend.Migrations.InitialSqlServerFix.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:MiniRent.Backend.Migrations.AddPaymentImageActivityEntities">
+            <inheritdoc />
+        </member>
+        <member name="M:MiniRent.Backend.Migrations.AddPaymentImageActivityEntities.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:MiniRent.Backend.Migrations.AddPaymentImageActivityEntities.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:MiniRent.Backend.Migrations.AddPaymentImageActivityEntities.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:MiniRent.Backend.Migrations.ComprehensiveSchemaAlignment">
+            <inheritdoc />
+        </member>
+        <member name="M:MiniRent.Backend.Migrations.ComprehensiveSchemaAlignment.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:MiniRent.Backend.Migrations.ComprehensiveSchemaAlignment.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:MiniRent.Backend.Migrations.ComprehensiveSchemaAlignment.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:MiniRent.Backend.Migrations.AddAdvancedFeaturesAndIndexes">
+            <inheritdoc />
+        </member>
+        <member name="M:MiniRent.Backend.Migrations.AddAdvancedFeaturesAndIndexes.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:MiniRent.Backend.Migrations.AddAdvancedFeaturesAndIndexes.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:MiniRent.Backend.Migrations.AddAdvancedFeaturesAndIndexes.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+    </members>
+</doc>

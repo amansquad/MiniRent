@@ -14,12 +14,21 @@ namespace MiniRent.Backend.Controllers;
 public class UsersController : ControllerBase
 {
     private readonly AppDbContext _context;
+    private readonly ILogger<UsersController> _logger;
 
-    public UsersController(AppDbContext context)
+    public UsersController(AppDbContext context, ILogger<UsersController> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
+    /// <summary>
+    /// Gets a paginated list of active users.
+    /// </summary>
+    /// <param name="search">Search by name or username.</param>
+    /// <param name="page">Page number.</param>
+    /// <param name="pageSize">Items per page.</param>
+    /// <returns>A paginated list of users.</returns>
     [HttpGet]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> GetUsers([FromQuery] string? search = null, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
@@ -67,7 +76,7 @@ public class UsersController : ControllerBase
 
     [HttpGet("{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> GetUser(int id)
+    public async Task<IActionResult> GetUser(Guid id)
     {
         var user = await _context.Users
             .Where(u => u.Id == id && u.IsActive)
@@ -94,7 +103,7 @@ public class UsersController : ControllerBase
 
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserByAdminDto updateDto)
+    public async Task<IActionResult> UpdateUser(Guid id, [FromBody] UpdateUserByAdminDto updateDto)
     {
         var user = await _context.Users
             .FirstOrDefaultAsync(u => u.Id == id);
@@ -132,9 +141,14 @@ public class UsersController : ControllerBase
         return Ok(userDto);
     }
 
+    /// <summary>
+    /// Deletes a user (soft delete).
+    /// </summary>
+    /// <param name="id">User GUID.</param>
+    /// <returns>No content.</returns>
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> DeleteUser(int id)
+    public async Task<IActionResult> DeleteUser(Guid id)
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
         if (userIdClaim == null)
@@ -142,7 +156,7 @@ public class UsersController : ControllerBase
             return Unauthorized();
         }
 
-        var currentUserId = int.Parse(userIdClaim.Value);
+        var currentUserId = Guid.Parse(userIdClaim.Value);
 
         // Prevent self-deletion
         if (id == currentUserId)

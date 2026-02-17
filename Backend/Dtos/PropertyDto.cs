@@ -2,9 +2,12 @@ using System.ComponentModel.DataAnnotations;
 
 namespace MiniRent.Backend.Dtos;
 
+/// <summary>
+/// Data transfer object for property details.
+/// </summary>
 public class PropertyDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string Address { get; set; } = string.Empty;
     public decimal Area { get; set; }
     public int Bedrooms { get; set; }
@@ -13,12 +16,25 @@ public class PropertyDto
     public string Status { get; set; } = string.Empty;
     public string? Description { get; set; }
     public string? ImageUrl { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string City { get; set; } = string.Empty;
+    public string State { get; set; } = string.Empty;
+    public string ZipCode { get; set; } = string.Empty;
+    public string Country { get; set; } = string.Empty;
+    public string PropertyType { get; set; } = string.Empty;
+    public double Bathrooms { get; set; }
     public DateTime CreatedAt { get; set; }
-    public int? CreatedById { get; set; }
+    public Guid? CreatedById { get; set; }
     public string CreatedBy { get; set; } = string.Empty;
     public List<RentalRecordDto> RecentRentals { get; set; } = new();
+    public List<PropertyImageDto> Images { get; set; } = new();
+    public List<AmenityDto> Amenities { get; set; } = new();
+    public List<ReviewDto> Reviews { get; set; } = new();
 }
 
+/// <summary>
+/// Data transfer object for property creation.
+/// </summary>
 public class PropertyCreateDto
 {
     [Required]
@@ -45,11 +61,39 @@ public class PropertyCreateDto
     
     [MaxLength(500)]
     public string? ImageUrl { get; set; }
+
+    [Required]
+    [MaxLength(200)]
+    public string Title { get; set; } = string.Empty;
+
+    [Required]
+    [MaxLength(100)]
+    public string City { get; set; } = string.Empty;
+
+    [Required]
+    [MaxLength(100)]
+    public string State { get; set; } = string.Empty;
+
+    [Required]
+    [MaxLength(20)]
+    public string ZipCode { get; set; } = string.Empty;
+
+    [Required]
+    [MaxLength(100)]
+    public string Country { get; set; } = string.Empty;
+
+    [Required]
+    [MaxLength(50)]
+    public string PropertyType { get; set; } = string.Empty;
+
+    [Required]
+    [Range(0, 20)]
+    public double Bathrooms { get; set; }
 }
 
 public class PropertyUpdateDto : PropertyCreateDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string? Status { get; set; }
 }
 

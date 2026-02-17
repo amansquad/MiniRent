@@ -45,7 +45,7 @@ public class AuthService : IAuthService
         };
     }
 
-    public async Task<UserDto?> RegisterAsync(RegisterUserDto registerDto, int currentUserId)
+    public async Task<UserDto?> RegisterAsync(RegisterUserDto registerDto, Guid currentUserId)
     {
         if (!await IsUsernameUniqueAsync(registerDto.Username))
         {
@@ -68,7 +68,7 @@ public class AuthService : IAuthService
         return _mapper.Map<UserDto>(user);
     }
 
-    public async Task<UserDto?> GetCurrentUserAsync(int userId)
+    public async Task<UserDto?> GetCurrentUserAsync(Guid userId)
     {
         var user = await _context.Users
             .FirstOrDefaultAsync(u => u.Id == userId && u.IsActive);
@@ -76,7 +76,7 @@ public class AuthService : IAuthService
         return user != null ? _mapper.Map<UserDto>(user) : null;
     }
 
-    public async Task<UserDto?> UpdateProfileAsync(int userId, UpdateUserDto updateDto)
+    public async Task<UserDto?> UpdateProfileAsync(Guid userId, UpdateUserDto updateDto)
     {
         var user = await _context.Users
             .FirstOrDefaultAsync(u => u.Id == userId && u.IsActive);
@@ -96,7 +96,7 @@ public class AuthService : IAuthService
         return _mapper.Map<UserDto>(user);
     }
 
-    public async Task<bool> IsUsernameUniqueAsync(string username, int? excludeUserId = null)
+    public async Task<bool> IsUsernameUniqueAsync(string username, Guid? excludeUserId = null)
     {
         var query = _context.Users.Where(u => u.Username == username);
 

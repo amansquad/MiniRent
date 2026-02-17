@@ -4,8 +4,8 @@ namespace MiniRent.Backend.Dtos;
 
 public class RentalRecordDto
 {
-    public int Id { get; set; }
-    public int PropertyId { get; set; }
+    public Guid Id { get; set; }
+    public Guid PropertyId { get; set; }
     public string PropertyAddress { get; set; } = string.Empty;
     public string TenantName { get; set; } = string.Empty;
 
@@ -13,22 +13,26 @@ public class RentalRecordDto
     [RegularExpression(@"^\d{0,10}$", ErrorMessage = "Phone number must be up to 10 digits.")]
     public string TenantPhone { get; set; } = string.Empty;
     public string? TenantEmail { get; set; }
+    public Guid TenantId { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime? EndDate { get; set; }
-    public decimal Deposit { get; set; }
+    public decimal SecurityDeposit { get; set; }
     public decimal MonthlyRent { get; set; }
     public string? Notes { get; set; }
     public string Status { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
-    public int? CreatedById { get; set; }
+    public Guid? CreatedById { get; set; }
     public string CreatedBy { get; set; } = string.Empty;
-    public int? OwnerId { get; set; }
+    public Guid? OwnerId { get; set; }
+    public List<PaymentDto> Payments { get; set; } = new();
 }
 
 public class RentalCreateDto
 {
     [Required]
-    public int PropertyId { get; set; }
+    public Guid PropertyId { get; set; }
+
+    public Guid? InquiryId { get; set; }
     
     [Required]
     [MaxLength(100)]
@@ -44,11 +48,14 @@ public class RentalCreateDto
     public string? TenantEmail { get; set; }
     
     [Required]
+    public Guid TenantId { get; set; }
+
+    [Required]
     public DateTime StartDate { get; set; }
     
     [Required]
     [Range(0, 10000000)]
-    public decimal Deposit { get; set; }
+    public decimal SecurityDeposit { get; set; }
     
     [Required]
     [Range(0, 10000000)]
@@ -61,7 +68,7 @@ public class RentalCreateDto
 public class RentalUpdateDto
 {
     [Required]
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     
     [MaxLength(100)]
     public string? TenantName { get; set; }
@@ -77,6 +84,12 @@ public class RentalUpdateDto
     [MaxLength(1000)]
     public string? Notes { get; set; }
     
+    [Range(0, 10000000)]
+    public decimal? SecurityDeposit { get; set; }
+    
+    [Range(0, 10000000)]
+    public decimal? MonthlyRent { get; set; }
+    
     public string? Status { get; set; }
 }
 
@@ -91,7 +104,7 @@ public class RentalEndDto
 
 public class RentalFilterDto
 {
-    public int? PropertyId { get; set; }
+    public Guid? PropertyId { get; set; }
     public string? Status { get; set; }
     public DateTime? StartDateFrom { get; set; }
     public DateTime? StartDateTo { get; set; }

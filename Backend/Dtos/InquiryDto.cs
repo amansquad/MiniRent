@@ -4,7 +4,7 @@ namespace MiniRent.Backend.Dtos;
 
 public class RentalInquiryDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
 
     [StringLength(10)]
@@ -15,11 +15,12 @@ public class RentalInquiryDto
     public string? OwnerReply { get; set; }
     public string Status { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
-    public int? PropertyId { get; set; }
+    public Guid? PropertyId { get; set; }
     public string? PropertyAddress { get; set; }
-    public int? CreatedById { get; set; }
+    public Guid? CreatedById { get; set; }
     public string CreatedBy { get; set; } = string.Empty;
-    public int? OwnerId { get; set; }
+    public Guid? OwnerId { get; set; }
+    public Guid? RentalRecordId { get; set; }
 }
 
 public class InquiryCreateDto
@@ -41,12 +42,12 @@ public class InquiryCreateDto
     [MaxLength(500)]
     public string? Message { get; set; }
     
-    public int? PropertyId { get; set; }
+    public Guid? PropertyId { get; set; }
 }
 
 public class InquiryUpdateDto
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     
     [Required]
     public string Status { get; set; } = string.Empty;
@@ -60,7 +61,7 @@ public class InquiryFilterDto
     public string? Status { get; set; }
     public DateTime? DateFrom { get; set; }
     public DateTime? DateTo { get; set; }
-    public int? PropertyId { get; set; }
+    public Guid? PropertyId { get; set; }
     public string? SearchName { get; set; }
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 10;

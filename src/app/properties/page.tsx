@@ -18,12 +18,13 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type Property = {
-    id: number;
+    id: string;
     address: string;
     monthlyRent: number;
     bedrooms: number;
+    bathrooms: number;
     status: string;
-    createdById?: number;
+    createdById?: string;
     createdBy?: string;
 };
 
@@ -35,9 +36,9 @@ export default function PropertiesPage() {
     const [editProperty, setEditProperty] = useState<Property | null>(null);
     const [inquiryProperty, setInquiryProperty] = useState<Property | null>(null);
     const [rentProperty, setRentProperty] = useState<Property | null>(null);
-    const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+    const [currentUserId, setCurrentUserId] = useState<string | null>(null);
     const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
-    const [highlightedId, setHighlightedId] = useState<number | null>(null);
+    const [highlightedId, setHighlightedId] = useState<string | null>(null);
     const { toast } = useToast();
 
     // Pagination & Filtering State
@@ -71,7 +72,7 @@ export default function PropertiesPage() {
         const params = new URLSearchParams((window as any).location.search);
         const idParam = params.get("id");
         if (idParam) {
-            const id = parseInt(idParam);
+            const id = idParam;
             const property = properties.find(p => p.id === id);
 
             if (property) {
@@ -97,7 +98,7 @@ export default function PropertiesPage() {
         const params = new URLSearchParams((window as any).location.search);
         const rentId = params.get("rent");
         if (rentId) {
-            const property = properties.find(p => p.id === parseInt(rentId));
+            const property = properties.find(p => p.id === rentId);
             if (property && property.status.toLowerCase() === "available") {
                 setRentProperty(property);
                 // Clear the param to avoid re-opening on manual refresh/filter change
@@ -149,9 +150,9 @@ export default function PropertiesPage() {
         }
     };
 
-    const [deleteId, setDeleteId] = useState<number | null>(null);
+    const [deleteId, setDeleteId] = useState<string | null>(null);
 
-    const handleDeleteClick = (id: number) => {
+    const handleDeleteClick = (id: string) => {
         setDeleteId(id);
     };
 
@@ -192,10 +193,10 @@ export default function PropertiesPage() {
     };
 
     return (
-        <div className="p-8">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold">Properties</h1>
-                <div className="flex gap-3">
+        <div className="p-4 md:p-8">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <h1 className="text-xl md:text-2xl font-bold">Properties</h1>
+                <div className="flex flex-wrap gap-2 md:gap-3 w-full sm:w-auto">
                     <Button variant="outline" size="sm" onClick={() => setShowFilters(!showFilters)} className={cn(showFilters && "bg-secondary")}>
                         <SlidersHorizontal className="w-4 h-4 mr-2" />
                         Filters
@@ -226,7 +227,7 @@ export default function PropertiesPage() {
             {/* Filters UI */}
             {showFilters && (
                 <Card className="p-4 mb-6 bg-muted/30 border-dashed">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                         <div className="space-y-1">
                             <label className="text-xs font-semibold text-muted-foreground uppercase">Search Address</label>
                             <div className="relative">
@@ -322,7 +323,7 @@ export default function PropertiesPage() {
             {loading ? (
                 <div>Loading...</div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                     {properties.length === 0 ? (
                         <div className="col-span-full text-center text-muted-foreground p-8">
                             No properties found.
@@ -346,6 +347,8 @@ export default function PropertiesPage() {
                                             </p>
                                             <div className="flex gap-2 text-xs text-muted-foreground mt-2">
                                                 <span>{property.bedrooms} Bed</span>
+                                                <span>•</span>
+                                                <span>{property.bathrooms} Bath</span>
                                                 <span>•</span>
                                                 <Badge variant="secondary" className="px-1.5 py-0 h-4 text-[10px] uppercase font-bold tracking-wider">
                                                     {property.status}

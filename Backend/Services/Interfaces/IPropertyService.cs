@@ -4,10 +4,10 @@ namespace MiniRent.Backend.Services.Interfaces;
 
 public interface IPropertyService
 {
-    Task<(List<PropertyDto> Properties, int TotalCount)> GetPropertiesAsync(PropertyFilterDto filter, int? userId = null, bool isAdmin = false);
-    Task<PropertyDto?> GetPropertyByIdAsync(int id, int? userId = null, bool isAdmin = false);
-    Task<PropertyDto> CreatePropertyAsync(PropertyCreateDto createDto, int userId);
-    Task<PropertyDto?> UpdatePropertyAsync(PropertyUpdateDto updateDto, int userId, bool isAdmin = false);
-    Task<bool> DeletePropertyAsync(int id, int userId, bool isAdmin = false);
-    Task<PropertyDto?> UpdatePropertyStatusAsync(int id, PropertyStatusUpdateDto statusDto, int userId, bool isAdmin = false);
+    Task<(List<PropertyDto> Properties, int TotalCount)> GetPropertiesAsync(PropertyFilterDto filter, Guid? userId = null, bool isAdmin = false);
+    Task<PropertyDto?> GetPropertyByIdAsync(Guid id, Guid? userId = null, bool isAdmin = false);
+    Task<PropertyDto> CreatePropertyAsync(PropertyCreateDto createDto, Guid userId);
+    Task<PropertyDto?> UpdatePropertyAsync(PropertyUpdateDto updateDto, Guid userId, bool isAdmin = false);
+    Task<bool> DeletePropertyAsync(Guid id, Guid userId, bool isAdmin = false);
+    Task<PropertyDto?> UpdatePropertyStatusAsync(Guid id, PropertyStatusUpdateDto statusDto, Guid userId, bool isAdmin = false);
 }

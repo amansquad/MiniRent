@@ -32,6 +32,7 @@ const geistMono = Geist_Mono({
 
 import { Button } from "@/components/ui/button";
 import { SearchBar } from "@/components/SearchBar";
+import { MobileNav } from "@/components/MobileNav";
 import { getUser, logout } from "@/lib/auth";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -59,7 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={geistMono.variable}>
       <body className={geistMono.className}>
         <div className="flex min-h-screen">
-          {/* Sidebar */}
+          {/* Sidebar - Desktop only */}
           <aside className="w-64 bg-slate-50 dark:bg-slate-900 border-r hidden md:flex flex-col p-6 sticky top-0 h-screen">
             <div className="flex items-center gap-2 mb-8 px-2">
               <div className="p-2 bg-blue-600 rounded-lg">
@@ -128,6 +129,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
           {/* Main content */}
           <main className="flex-1 bg-white dark:bg-slate-950 overflow-auto">
+            {/* Mobile header */}
+            <header className="md:hidden sticky top-0 z-40 bg-white dark:bg-slate-950 border-b px-4 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <MobileNav user={user} navItems={navItems} />
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 bg-blue-600 rounded-lg">
+                    <Building2 className="w-4 h-4 text-white" />
+                  </div>
+                  <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">MiniRent</h2>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <SearchBar />
+              </div>
+            </header>
+
             <div className="min-h-full">
               {children}
             </div>

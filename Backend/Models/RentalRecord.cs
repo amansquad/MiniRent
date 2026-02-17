@@ -4,19 +4,21 @@ namespace MiniRent.Backend.Models;
 
 public class RentalRecord
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     
     [Required]
-    public int PropertyId { get; set; }
+    public Guid PropertyId { get; set; }
     public Property Property { get; set; } = null!;
     
     [Required]
+    public Guid TenantId { get; set; }
+    public User Tenant { get; set; } = null!;
+
     [MaxLength(100)]
-    public string TenantName { get; set; } = string.Empty;
+    public string? TenantName { get; set; }
     
-    [Required]
     [MaxLength(20)]
-    public string TenantPhone { get; set; } = string.Empty;
+    public string? TenantPhone { get; set; }
     
     [MaxLength(100)]
     public string? TenantEmail { get; set; }
@@ -28,7 +30,7 @@ public class RentalRecord
     
     [Required]
     [Range(0, 10000000)]
-    public decimal Deposit { get; set; }
+    public decimal SecurityDeposit { get; set; }
     
     [Required]
     [Range(0, 10000000)]
@@ -43,8 +45,11 @@ public class RentalRecord
     public RentalStatus Status { get; set; } = RentalStatus.Active;
     
     // Navigation properties
-    public int? CreatedById { get; set; }
+    public Guid? CreatedById { get; set; }
     public User? CreatedBy { get; set; }
+
+    // Collections
+    public ICollection<Payment> Payments { get; set; } = new List<Payment>();
 }
 
 public enum RentalStatus

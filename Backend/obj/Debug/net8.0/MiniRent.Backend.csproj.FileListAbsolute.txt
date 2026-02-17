@@ -46,8 +46,6 @@
 /home/kali/Documents/MiniRent/Backend/bin/Debug/net8.0/Microsoft.SqlServer.Server.dll
 /home/kali/Documents/MiniRent/Backend/bin/Debug/net8.0/Microsoft.Win32.SystemEvents.dll
 /home/kali/Documents/MiniRent/Backend/bin/Debug/net8.0/Mono.TextTemplating.dll
-/home/kali/Documents/MiniRent/Backend/bin/Debug/net8.0/Npgsql.dll
-/home/kali/Documents/MiniRent/Backend/bin/Debug/net8.0/Npgsql.EntityFrameworkCore.PostgreSQL.dll
 /home/kali/Documents/MiniRent/Backend/bin/Debug/net8.0/Serilog.dll
 /home/kali/Documents/MiniRent/Backend/bin/Debug/net8.0/Serilog.AspNetCore.dll
 /home/kali/Documents/MiniRent/Backend/bin/Debug/net8.0/Serilog.Extensions.Hosting.dll
@@ -154,3 +152,5 @@
 /home/kali/Documents/MiniRent/Backend/obj/Debug/net8.0/MiniRent.Backend.genruntimeconfig.cache
 /home/kali/Documents/MiniRent/Backend/obj/Debug/net8.0/ref/MiniRent.Backend.dll
 /home/kali/Documents/MiniRent/Backend/obj/Debug/net8.0/MiniRent.Backend.sourcelink.json
+/home/kali/Documents/MiniRent/Backend/bin/Debug/net8.0/MiniRent.Backend.xml
+/home/kali/Documents/MiniRent/Backend/obj/Debug/net8.0/MiniRent.Backend.xml

@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 interface AddInquiryModalProps {
     isOpen: boolean;
     onClose: () => void;
-    propertyId: number;
+    propertyId: string;
     propertyAddress: string;
 }
 
@@ -30,7 +30,7 @@ export default function AddInquiryModal({ isOpen, onClose, propertyId, propertyA
         setError("");
 
         try {
-            const token = typeof (window as any) !== "undefined" ? (window as any).localStorage.getItem("token") : null;
+            const token = (typeof (window as any) !== "undefined") ? (window as any).localStorage.getItem("token") : null;
             const res = await fetch("/api/inquiries", {
                 method: "POST",
                 headers: {
@@ -47,7 +47,7 @@ export default function AddInquiryModal({ isOpen, onClose, propertyId, propertyA
             });
 
             if (!res.ok) {
-                const data = await res.json();
+                const data = await res.json() as any;
                 throw new Error(data.message || "Failed to send inquiry");
             }
 

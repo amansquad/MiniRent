@@ -2,9 +2,9 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MiniRent.Backend.Data;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -18,124 +18,317 @@ namespace MiniRent.Backend.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "8.0.0")
-                .HasAnnotation("Relational:MaxIdentifierLength", 63);
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("AmenityProperty", b =>
+                {
+                    b.Property<Guid>("AmenitiesId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("PropertiesId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("AmenitiesId", "PropertiesId");
+
+                    b.HasIndex("PropertiesId");
+
+                    b.ToTable("PropertyAmenities", (string)null);
+                });
+
+            modelBuilder.Entity("MiniRent.Backend.Models.Activity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid?>("EntityId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("EntityType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("Type");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Activities");
+                });
+
+            modelBuilder.Entity("MiniRent.Backend.Models.Amenity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Icon")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Amenities");
+                });
+
+            modelBuilder.Entity("MiniRent.Backend.Models.Payment", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("PaidDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PaymentMethod")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("RentalId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DueDate");
+
+                    b.HasIndex("RentalId");
+
+                    b.HasIndex("Status");
+
+                    b.ToTable("Payments");
+                });
 
             modelBuilder.Entity("MiniRent.Backend.Models.Property", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Address")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<decimal>("Area")
                         .HasColumnType("decimal(10,2)");
 
+                    b.Property<decimal>("Bathrooms")
+                        .HasColumnType("decimal(4,1)");
+
                     b.Property<int>("Bedrooms")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Country")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("datetime2");
 
-                    b.Property<int?>("CreatedById")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("CreatedById1")
-                        .HasColumnType("integer");
+                    b.Property<Guid?>("CreatedById")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Description")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("Floor")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<string>("ImageUrl")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
+                        .HasColumnType("bit");
 
                     b.Property<decimal>("MonthlyRent")
                         .HasColumnType("decimal(10,2)");
 
+                    b.Property<string>("PropertyType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("datetime2");
 
-                    b.Property<int?>("UpdatedById")
-                        .HasColumnType("integer");
+                    b.Property<Guid?>("UpdatedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ZipCode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Address");
 
-                    b.HasIndex("CreatedById");
+                    b.HasIndex("City");
 
-                    b.HasIndex("CreatedById1");
+                    b.HasIndex("Country");
+
+                    b.HasIndex("CreatedById");
 
                     b.HasIndex("MonthlyRent");
 
+                    b.HasIndex("PropertyType");
+
+                    b.HasIndex("State");
+
                     b.HasIndex("Status");
+
+                    b.HasIndex("Title");
+
+                    b.HasIndex("UpdatedById");
+
+                    b.HasIndex("ZipCode");
 
                     b.ToTable("Properties");
                 });
 
-            modelBuilder.Entity("MiniRent.Backend.Models.RentalInquiry", b =>
+            modelBuilder.Entity("MiniRent.Backend.Models.PropertyImage", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("uniqueidentifier");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<string>("Caption")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("datetime2");
 
-                    b.Property<int?>("CreatedById")
-                        .HasColumnType("integer");
+                    b.Property<bool>("IsPrimary")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("PropertyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PropertyId");
+
+                    b.ToTable("PropertyImages");
+                });
+
+            modelBuilder.Entity("MiniRent.Backend.Models.RentalInquiry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("CreatedById")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Message")
                         .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("OwnerReply")
                         .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("Phone")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
+                        .HasColumnType("nvarchar(20)");
 
-                    b.Property<int?>("PropertyId")
-                        .HasColumnType("integer");
+                    b.Property<Guid?>("PropertyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("RentalRecordId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -147,6 +340,8 @@ namespace MiniRent.Backend.Migrations
 
                     b.HasIndex("PropertyId");
 
+                    b.HasIndex("RentalRecordId");
+
                     b.HasIndex("Status");
 
                     b.ToTable("RentalInquiries");
@@ -154,146 +349,235 @@ namespace MiniRent.Backend.Migrations
 
             modelBuilder.Entity("MiniRent.Backend.Models.RentalRecord", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("datetime2");
 
-                    b.Property<int?>("CreatedById")
-                        .HasColumnType("integer");
-
-                    b.Property<decimal>("Deposit")
-                        .HasColumnType("decimal(10,2)");
+                    b.Property<Guid?>("CreatedById")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("EndDate")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("datetime2");
 
                     b.Property<decimal>("MonthlyRent")
                         .HasColumnType("decimal(10,2)");
 
                     b.Property<string>("Notes")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("PropertyId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("PropertyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("SecurityDeposit")
+                        .HasColumnType("decimal(10,2)");
 
                     b.Property<DateTime>("StartDate")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("TenantEmail")
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid>("TenantId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("TenantName")
-                        .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("TenantPhone")
-                        .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedById");
 
+                    b.HasIndex("EndDate");
+
                     b.HasIndex("PropertyId");
 
                     b.HasIndex("StartDate");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("TenantId");
 
                     b.HasIndex("TenantName");
 
                     b.ToTable("RentalRecords");
                 });
 
-            modelBuilder.Entity("MiniRent.Backend.Models.User", b =>
+            modelBuilder.Entity("MiniRent.Backend.Models.Review", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("uniqueidentifier");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<string>("Comment")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("PropertyId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Rating")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ReviewerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PropertyId");
+
+                    b.HasIndex("ReviewerId");
+
+                    b.ToTable("Reviews");
+                });
+
+            modelBuilder.Entity("MiniRent.Backend.Models.User", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
+                        .HasColumnType("bit");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("Phone")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Role")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp without time zone");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                        .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("Username")
+                        .IsUnique();
 
                     b.ToTable("Users");
 
                     b.HasData(
                         new
                         {
-                            Id = 1,
-                            CreatedAt = new DateTime(2026, 2, 13, 12, 34, 56, 279, DateTimeKind.Utc).AddTicks(6979),
+                            Id = new Guid("00000000-0000-0000-0000-000000000001"),
+                            CreatedAt = new DateTime(2026, 2, 17, 12, 46, 21, 834, DateTimeKind.Utc).AddTicks(6326),
                             Email = "",
                             FullName = "System Administrator",
                             IsActive = true,
-                            PasswordHash = "$2a$11$EZL0Mz0oKVSeVQhCP7CxyeVq92kgPeOSq4g/rhozG5OBmyeZeB3.G",
+                            PasswordHash = "$2a$11$z8mmNnu3QJhc7wGKWkGJhuMz0wfht.5wfIGaX496xkzCMtHhMnGTm",
                             Phone = "",
                             Role = 0,
                             Username = "admin"
                         });
                 });
 
+            modelBuilder.Entity("AmenityProperty", b =>
+                {
+                    b.HasOne("MiniRent.Backend.Models.Amenity", null)
+                        .WithMany()
+                        .HasForeignKey("AmenitiesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MiniRent.Backend.Models.Property", null)
+                        .WithMany()
+                        .HasForeignKey("PropertiesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("MiniRent.Backend.Models.Activity", b =>
+                {
+                    b.HasOne("MiniRent.Backend.Models.User", "User")
+                        .WithMany("Activities")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("MiniRent.Backend.Models.Payment", b =>
+                {
+                    b.HasOne("MiniRent.Backend.Models.RentalRecord", "Rental")
+                        .WithMany("Payments")
+                        .HasForeignKey("RentalId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Rental");
+                });
+
             modelBuilder.Entity("MiniRent.Backend.Models.Property", b =>
                 {
+                    b.HasOne("MiniRent.Backend.Models.User", "CreatedBy")
+                        .WithMany("OwnedProperties")
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("MiniRent.Backend.Models.User", "UpdatedBy")
                         .WithMany()
-                        .HasForeignKey("CreatedById")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("MiniRent.Backend.Models.User", "CreatedBy")
-                        .WithMany()
-                        .HasForeignKey("CreatedById1");
+                        .HasForeignKey("UpdatedById")
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("CreatedBy");
 
                     b.Navigation("UpdatedBy");
+                });
+
+            modelBuilder.Entity("MiniRent.Backend.Models.PropertyImage", b =>
+                {
+                    b.HasOne("MiniRent.Backend.Models.Property", "Property")
+                        .WithMany("Images")
+                        .HasForeignKey("PropertyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Property");
                 });
 
             modelBuilder.Entity("MiniRent.Backend.Models.RentalInquiry", b =>
@@ -301,16 +585,23 @@ namespace MiniRent.Backend.Migrations
                     b.HasOne("MiniRent.Backend.Models.User", "CreatedBy")
                         .WithMany()
                         .HasForeignKey("CreatedById")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("MiniRent.Backend.Models.Property", "Property")
                         .WithMany("Inquiries")
                         .HasForeignKey("PropertyId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("MiniRent.Backend.Models.RentalRecord", "RentalRecord")
+                        .WithMany()
+                        .HasForeignKey("RentalRecordId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.Navigation("CreatedBy");
 
                     b.Navigation("Property");
+
+                    b.Navigation("RentalRecord");
                 });
 
             modelBuilder.Entity("MiniRent.Backend.Models.RentalRecord", b =>
@@ -318,7 +609,7 @@ namespace MiniRent.Backend.Migrations
                     b.HasOne("MiniRent.Backend.Models.User", "CreatedBy")
                         .WithMany()
                         .HasForeignKey("CreatedById")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("MiniRent.Backend.Models.Property", "Property")
                         .WithMany("RentalHistory")
@@ -326,16 +617,61 @@ namespace MiniRent.Backend.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("MiniRent.Backend.Models.User", "Tenant")
+                        .WithMany("TenantRentals")
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.Navigation("CreatedBy");
 
                     b.Navigation("Property");
+
+                    b.Navigation("Tenant");
+                });
+
+            modelBuilder.Entity("MiniRent.Backend.Models.Review", b =>
+                {
+                    b.HasOne("MiniRent.Backend.Models.Property", "Property")
+                        .WithMany("Reviews")
+                        .HasForeignKey("PropertyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MiniRent.Backend.Models.User", "Reviewer")
+                        .WithMany()
+                        .HasForeignKey("ReviewerId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Property");
+
+                    b.Navigation("Reviewer");
                 });
 
             modelBuilder.Entity("MiniRent.Backend.Models.Property", b =>
                 {
+                    b.Navigation("Images");
+
                     b.Navigation("Inquiries");
 
                     b.Navigation("RentalHistory");
+
+                    b.Navigation("Reviews");
+                });
+
+            modelBuilder.Entity("MiniRent.Backend.Models.RentalRecord", b =>
+                {
+                    b.Navigation("Payments");
+                });
+
+            modelBuilder.Entity("MiniRent.Backend.Models.User", b =>
+                {
+                    b.Navigation("Activities");
+
+                    b.Navigation("OwnedProperties");
+
+                    b.Navigation("TenantRentals");
                 });
 #pragma warning restore 612, 618
         }

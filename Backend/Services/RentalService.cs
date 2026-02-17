@@ -18,11 +18,12 @@ public class RentalService : IRentalService
         _mapper = mapper;
     }
 
-    public async Task<(List<RentalRecordDto> Rentals, int TotalCount)> GetRentalsAsync(RentalFilterDto filter, int? userId = null, bool isAdmin = false)
+    public async Task<(List<RentalRecordDto> Rentals, int TotalCount)> GetRentalsAsync(RentalFilterDto filter, Guid? userId = null, bool isAdmin = false)
     {
         var query = _context.RentalRecords
             .Include(r => r.Property)
             .Include(r => r.CreatedBy)
+            .Include(r => r.Payments)
             .AsQueryable();
 
         // If not admin, filter by user's own rentals OR rentals of user's properties
@@ -56,7 +57,6 @@ public class RentalService : IRentalService
         {
             query = query.Where(r => r.TenantName.Contains(filter.TenantName));
         }
-
         var totalCount = await query.CountAsync();
 
         var rentals = await query
@@ -68,11 +68,12 @@ public class RentalService : IRentalService
         return (_mapper.Map<List<RentalRecordDto>>(rentals), totalCount);
     }
 
-    public async Task<RentalRecordDto?> GetRentalByIdAsync(int id, int? userId = null, bool isAdmin = false)
+    public async Task<RentalRecordDto?> GetRentalByIdAsync(Guid id, Guid? userId = null, bool isAdmin = false)
     {
         var query = _context.RentalRecords
             .Include(r => r.Property)
             .Include(r => r.CreatedBy)
+            .Include(r => r.Payments)
             .Where(r => r.Id == id);
 
         // If not admin, filter by user's own rentals OR rentals of user's properties
@@ -86,7 +87,7 @@ public class RentalService : IRentalService
         return rental != null ? _mapper.Map<RentalRecordDto>(rental) : null;
     }
 
-    public async Task<RentalRecordDto> CreateRentalAsync(RentalCreateDto createDto, int userId)
+    public async Task<RentalRecordDto> CreateRentalAsync(RentalCreateDto createDto, Guid userId)
     {
         // Check if property exists and is available
         var property = await _context.Properties
@@ -109,6 +110,18 @@ public class RentalService : IRentalService
 
         _context.RentalRecords.Add(rental);
 
+        if (createDto.InquiryId.HasValue)
+        {
+            var inquiry = await _context.RentalInquiries
+                .FirstOrDefaultAsync(i => i.Id == createDto.InquiryId.Value);
+            
+            if (inquiry != null)
+            {
+                inquiry.Status = InquiryStatus.Converted;
+                inquiry.RentalRecordId = rental.Id;
+            }
+        }
+
         if (isOwner)
         {
             // Update property status to Rented
@@ -123,12 +136,14 @@ public class RentalService : IRentalService
         var createdRental = await _context.RentalRecords
             .Include(r => r.Property)
             .Include(r => r.CreatedBy)
+            .Include(r => r.Payments)
+            .Include(r => r.Tenant)
             .FirstAsync(r => r.Id == rental.Id);
 
         return _mapper.Map<RentalRecordDto>(createdRental);
     }
 
-    public async Task<RentalRecordDto?> UpdateRentalAsync(RentalUpdateDto updateDto, int userId, bool isAdmin = false)
+    public async Task<RentalRecordDto?> UpdateRentalAsync(RentalUpdateDto updateDto, Guid userId, bool isAdmin = false)
     {
         var query = _context.RentalRecords
             .Include(r => r.Property)
@@ -154,12 +169,14 @@ public class RentalService : IRentalService
         var updatedRental = await _context.RentalRecords
             .Include(r => r.Property)
             .Include(r => r.CreatedBy)
+            .Include(r => r.Payments)
+            .Include(r => r.Tenant)
             .FirstAsync(r => r.Id == rental.Id);
 
         return _mapper.Map<RentalRecordDto>(updatedRental);
     }
 
-    public async Task<RentalRecordDto?> UpdateStatusAsync(int id, string status, int userId, bool isAdmin = false)
+    public async Task<RentalRecordDto?> UpdateStatusAsync(Guid id, string status, Guid userId, bool isAdmin = false)
     {
         var query = _context.RentalRecords
             .Include(r => r.Property)
@@ -210,12 +227,14 @@ public class RentalService : IRentalService
         var updatedRental = await _context.RentalRecords
             .Include(r => r.Property)
             .Include(r => r.CreatedBy)
+            .Include(r => r.Payments)
+            .Include(r => r.Tenant)
             .FirstAsync(r => r.Id == rental.Id);
 
         return _mapper.Map<RentalRecordDto>(updatedRental);
     }
 
-    public async Task<RentalRecordDto?> EndRentalAsync(int id, RentalEndDto endDto, int userId, bool isAdmin = false)
+    public async Task<RentalRecordDto?> EndRentalAsync(Guid id, RentalEndDto endDto, Guid userId, bool isAdmin = false)
     {
         var query = _context.RentalRecords
             .Include(r => r.Property)
@@ -254,12 +273,14 @@ public class RentalService : IRentalService
         var updatedRental = await _context.RentalRecords
             .Include(r => r.Property)
             .Include(r => r.CreatedBy)
+            .Include(r => r.Payments)
+            .Include(r => r.Tenant)
             .FirstAsync(r => r.Id == rental.Id);
 
         return _mapper.Map<RentalRecordDto>(updatedRental);
     }
 
-    public async Task<bool> DeleteRentalAsync(int id, int userId, bool isAdmin = false)
+    public async Task<bool> DeleteRentalAsync(Guid id, Guid userId, bool isAdmin = false)
     {
         var query = _context.RentalRecords
             .Include(r => r.Property)

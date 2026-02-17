@@ -6,31 +6,32 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlserver"
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(uuid())
   username  String   @unique
   email     String   @unique
   password  String
   fullName  String
-  role      Role     @default(USER)
+  role      String   @default("USER")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
-  properties    Property[]
-  rentals       Rental[]       @relation("RentalUser")
-  inquiries     Inquiry[]
-  activities    Activity[]
+  ownedProperties Property[]     @relation("OwnedProperties")
+  rentals         Rental[]       @relation("TenantRentals")
+  inquiries       Inquiry[]
+  activities      Activity[]
+  reviews         Review[]       @relation("ReviewUser")
 
   @@map("users")
 }
 
 model Property {
-  id          Int          @id @default(autoincrement())
+  id          String         @id @default(uuid())
   title       String
   description String?
   address     String
@@ -38,152 +39,171 @@ model Property {
   state       String
   zipCode     String
   country     String
-  propertyType PropertyType
+  propertyType String
   bedrooms    Int?
   bathrooms   Float?
   area        Float?       // in square meters
-  rentAmount  Float
-  status      PropertyStatus @default(AVAILABLE)
+  monthlyRent Float
+  floor       Int?
+  status      String       @default("AVAILABLE")
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
   // Relations
-  ownerId     Int
-  owner       User         @relation(fields: [ownerId], references: [id])
+  ownerId     String
+  owner       User         @relation("OwnedProperties", fields: [ownerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   rentals     Rental[]
   inquiries   Inquiry[]
   images      PropertyImage[]
+  amenities   Amenity[]
+  reviews     Review[]
+
+  @@index([state])
+  @@index([country])
+  @@index([propertyType])
+  @@index([city])
+  @@index([zipCode])
+  @@index([title])
+  @@index([status])
+  @@index([monthlyRent])
 
   @@map("properties")
 }
 
 model PropertyImage {
-  id         Int      @id @default(autoincrement())
+  id         String   @id @default(uuid())
   url        String
   caption    String?
   isPrimary  Boolean  @default(false)
   createdAt  DateTime @default(now())
 
   // Relations
-  propertyId Int
-  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
+  @@index([propertyId])
   @@map("property_images")
 }
 
+model Amenity {
+  id         String     @id @default(uuid())
+  name       String     @unique
+  icon       String?
+  properties Property[]
+
+  @@map("amenities")
+}
+
+model Review {
+  id         String   @id @default(uuid())
+  rating     Int
+  comment    String?
+  createdAt  DateTime @default(now())
+
+  // Relations
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  reviewerId String
+  reviewer   User     @relation("ReviewUser", fields: [reviewerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([propertyId])
+  @@index([reviewerId])
+  @@map("reviews")
+}
+
 model Rental {
-  id           Int            @id @default(autoincrement())
+  id           String         @id @default(uuid())
   startDate    DateTime
   endDate      DateTime?
   monthlyRent  Float
   securityDeposit Float?
-  status       RentalStatus   @default(ACTIVE)
+  status       String         @default("ACTIVE")
   notes        String?
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
 
   // Relations
-  propertyId   Int
-  property     Property       @relation(fields: [propertyId], references: [id])
-  tenantId     Int
-  tenant       User           @relation("RentalUser", fields: [tenantId], references: [id])
+  propertyId   String
+  property     Property       @relation(fields: [propertyId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  tenantId     String
+  tenant       User           @relation("TenantRentals", fields: [tenantId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   payments     Payment[]
+  inquiries    Inquiry[]
+
+  @@index([startDate])
+  @@index([endDate])
+  @@index([status])
+  @@index([propertyId])
+  @@index([tenantId])
 
   @@map("rentals")
 }
 
 model Payment {
-  id          Int           @id @default(autoincrement())
+  id          String        @id @default(uuid())
   amount      Float
   dueDate     DateTime
   paidDate    DateTime?
-  status      PaymentStatus @default(PENDING)
+  status      String        @default("PENDING")
   paymentMethod String?
   notes       String?
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
   // Relations
-  rentalId    Int
+  rentalId    String
   rental      Rental        @relation(fields: [rentalId], references: [id], onDelete: Cascade)
 
+  @@index([rentalId])
+  @@index([status])
+  @@index([dueDate])
   @@map("payments")
 }
 
 model Inquiry {
-  id          Int           @id @default(autoincrement())
+  id          String        @id @default(uuid())
   name        String
   email       String
   phone       String?
   message     String
-  status      InquiryStatus @default(NEW)
+  status      String        @default("NEW")
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
   // Relations
-  propertyId  Int
-  property    Property      @relation(fields: [propertyId], references: [id])
-  userId      Int?
-  user        User?         @relation(fields: [userId], references: [id])
+  propertyId  String
+  property    Property      @relation(fields: [propertyId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  userId      String?
+  user        User?         @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  
+  rentalId    String?
+  rental      Rental?       @relation(fields: [rentalId], references: [id], onDelete: SetNull)
+
+  @@index([email])
+  @@index([status])
+  @@index([propertyId])
+  @@index([userId])
+  @@index([rentalId])
+  @@index([createdAt])
 
   @@map("inquiries")
 }
 
 model Activity {
-  id          Int       @id @default(autoincrement())
+  id          String    @id @default(uuid())
   type        String
   description String
-  entityId    Int?
+  entityId    String?
   entityType  String?
   createdAt   DateTime  @default(now())
 
   // Relations
-  userId      Int
-  user        User      @relation(fields: [userId], references: [id])
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([type])
 
   @@map("activities")
-}
-
-// Enums
-enum Role {
-  ADMIN
-  MANAGER
-  USER
-}
-
-enum PropertyType {
-  APARTMENT
-  HOUSE
-  CONDO
-  STUDIO
-  TOWNHOUSE
-  VILLA
-}
-
-enum PropertyStatus {
-  AVAILABLE
-  RENTED
-  MAINTENANCE
-  UNAVAILABLE
-}
-
-enum RentalStatus {
-  ACTIVE
-  ENDED
-  TERMINATED
-  PENDING
-}
-
-enum PaymentStatus {
-  PENDING
-  PAID
-  OVERDUE
-  CANCELLED
-}
-
-enum InquiryStatus {
-  NEW
-  CONTACTED
-  RESOLVED
-  CLOSED
 }

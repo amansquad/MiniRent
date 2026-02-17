@@ -8,15 +8,19 @@ using System.Text;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Microsoft.OpenApi.Models;
 using MiniRent.Backend.Models;
+using MiniRent.Backend.Middleware;
 
-// Relax Npgsql timestamp behavior so DateTimeKind.Unspecified is treated as UTC.
-// This avoids runtime exceptions when working with 'timestamp with time zone' columns.
-AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+// AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
 builder.Services.AddControllers();
+builder.Services.AddResponseCaching();
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+});
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -53,11 +57,20 @@ builder.Services.AddSwaggerGen(c =>
             Array.Empty<string>()
         }
     });
+
+
+    // Include XML comments if available
+    var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+    if (File.Exists(xmlPath))
+    {
+        c.IncludeXmlComments(xmlPath);
+    }
 });
 
 // Database
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
@@ -106,19 +119,25 @@ builder.Services.AddScoped<IRentalService, RentalService>();
 builder.Services.AddScoped<IInquiryService, InquiryService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<ISearchService, SearchService>();
+builder.Services.AddScoped<IAmenityService, AmenityService>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
+builder.Services.AddScoped<IStatisticsService, StatisticsService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline
-if (app.Environment.IsDevelopment())
+app.UseMiddleware<ExceptionMiddleware>();
+
+
+app.UseResponseCompression();
+app.UseResponseCaching();
+
+// Configure Swagger (available in all environments for API documentation)
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "MiniRent API v1");
-        c.RoutePrefix = string.Empty; // Serve Swagger at root
-    });
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "MiniRent API v1");
+    c.RoutePrefix = "swagger"; // Serve Swagger at /swagger
+});
 
 app.UseHttpsRedirection();
 

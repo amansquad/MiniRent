@@ -51,15 +51,15 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-8">Dashboard</h1>
+    <div className="p-4 md:p-8">
+      <h1 className="text-xl md:text-2xl font-bold mb-6 md:mb-8">Dashboard</h1>
       {loading ? (
         <div>Loading...</div>
       ) : error ? (
         <div className="text-red-500">{error}</div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
             <Card className="p-4">
               <div className="text-sm text-muted-foreground">Total Properties</div>
               <div className="text-3xl font-bold mt-2">{stats?.totalProperties}</div>

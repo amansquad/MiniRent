@@ -15,6 +15,7 @@ export function AddPropertyModal({ isOpen, onClose }: { isOpen: boolean; onClose
         address: "",
         area: "",
         bedrooms: "",
+        bathrooms: "",
         floor: "",
         monthlyRent: "",
         description: ""
@@ -36,6 +37,7 @@ export function AddPropertyModal({ isOpen, onClose }: { isOpen: boolean; onClose
                 ...formData,
                 area: Number(formData.area),
                 bedrooms: Number(formData.bedrooms),
+                bathrooms: Number(formData.bathrooms),
                 floor: formData.floor ? Number(formData.floor) : null,
                 monthlyRent: Number(formData.monthlyRent)
             };
@@ -59,6 +61,7 @@ export function AddPropertyModal({ isOpen, onClose }: { isOpen: boolean; onClose
                 address: "",
                 area: "",
                 bedrooms: "",
+                bathrooms: "",
                 floor: "",
                 monthlyRent: "",
                 description: ""
@@ -97,6 +100,13 @@ export function AddPropertyModal({ isOpen, onClose }: { isOpen: boolean; onClose
                             Bedrooms
                         </Label>
                         <Input id="bedrooms" type="number" value={formData.bedrooms} onChange={handleChange} className="col-span-3" required />
+                    </div>
+
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="bathrooms" className="text-right">
+                            Bathrooms
+                        </Label>
+                        <Input id="bathrooms" type="number" step="0.5" value={formData.bathrooms} onChange={handleChange} className="col-span-3" required />
                     </div>
 
                     <div className="grid grid-cols-4 items-center gap-4">

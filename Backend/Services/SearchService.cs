@@ -15,7 +15,7 @@ public class SearchService : ISearchService
         _context = context;
     }
 
-    public async Task<List<UnifiedSearchResultDto>> SearchAsync(string query, int? userId, bool isAdmin)
+    public async Task<List<UnifiedSearchResultDto>> SearchAsync(string query, Guid? userId, bool isAdmin)
     {
         if (string.IsNullOrWhiteSpace(query)) return new List<UnifiedSearchResultDto>();
 
@@ -23,12 +23,9 @@ public class SearchService : ISearchService
         var results = new List<UnifiedSearchResultDto>();
 
         // 1. Search Properties
-        var propertiesQuery = _context.Properties.Where(p => !p.IsDeleted);
+        var propertiesQuery = _context.Properties.AsNoTracking().Where(p => !p.IsDeleted);
         if (!isAdmin && userId.HasValue)
         {
-            // Regular user can search:
-            // - Any "Available" property
-            // - Any property THEY created (even if not available)
             propertiesQuery = propertiesQuery.Where(p => p.Status == PropertyStatus.Available || p.CreatedById == userId.Value);
         }
 
@@ -47,10 +44,10 @@ public class SearchService : ISearchService
         results.AddRange(properties);
 
         // 2. Search Inquiries
-        var inquiriesQuery = _context.RentalInquiries.AsQueryable();
+        var inquiriesQuery = _context.RentalInquiries.AsNoTracking().AsQueryable();
         if (!isAdmin && userId.HasValue)
         {
-            inquiriesQuery = inquiriesQuery.Where(i => i.CreatedById == userId.Value || i.Property.CreatedById == userId.Value);
+            inquiriesQuery = inquiriesQuery.Where(i => i.CreatedById == userId.Value || (i.Property != null && i.Property.CreatedById == userId.Value));
         }
 
         var inquiries = await inquiriesQuery
@@ -68,10 +65,10 @@ public class SearchService : ISearchService
         results.AddRange(inquiries);
 
         // 3. Search Rentals
-        var rentalsQuery = _context.RentalRecords.AsQueryable();
+        var rentalsQuery = _context.RentalRecords.AsNoTracking().AsQueryable();
         if (!isAdmin && userId.HasValue)
         {
-            rentalsQuery = rentalsQuery.Where(r => r.CreatedById == userId.Value || r.Property.CreatedById == userId.Value);
+            rentalsQuery = rentalsQuery.Where(r => r.CreatedById == userId.Value || (r.Property != null && r.Property.CreatedById == userId.Value));
         }
 
         var rentals = await rentalsQuery

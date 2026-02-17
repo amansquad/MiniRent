@@ -4,7 +4,7 @@ import { useEffect, useState, use } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Home, BedDouble, Layers, Ruler, Calendar, User, Phone, Mail, FileText } from "lucide-react";
+import { ArrowLeft, Home, BedDouble, Bath, Layers, Ruler, Calendar, User, Phone, Mail, FileText } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
@@ -13,7 +13,7 @@ import AddInquiryModal from "@/components/AddInquiryModal";
 import { AddRentalModal } from "@/components/AddRentalModal";
 
 interface RentalHistory {
-    id: number;
+    id: string;
     tenantName: string;
     startDate: string;
     endDate: string | null;
@@ -24,17 +24,18 @@ interface RentalHistory {
 }
 
 interface Property {
-    id: number;
+    id: string;
     address: string;
     area: number;
     bedrooms: number;
+    bathrooms: number;
     floor: number | null;
     monthlyRent: number;
     status: string;
     description: string | null;
     imageUrl: string | null;
     createdBy: string;
-    createdById: number;
+    createdById: string;
     recentRentals: RentalHistory[];
 }
 
@@ -44,7 +45,7 @@ export default function PropertyDetailPage() {
     const { toast } = useToast();
     const [property, setProperty] = useState<Property | null>(null);
     const [loading, setLoading] = useState(true);
-    const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+    const [currentUserId, setCurrentUserId] = useState<string | null>(null);
     const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
     const [showInquiryModal, setShowInquiryModal] = useState(false);
     const [showRentalModal, setShowRentalModal] = useState(false);
@@ -121,16 +122,16 @@ export default function PropertyDetailPage() {
                                 <span className="text-sm font-medium">{property.bedrooms} Bedrooms</span>
                             </div>
                             <div className="flex flex-col items-center p-3 bg-muted rounded-lg">
+                                <Bath className="w-5 h-5 mb-2 text-primary" />
+                                <span className="text-sm font-medium">{property.bathrooms} Bathrooms</span>
+                            </div>
+                            <div className="flex flex-col items-center p-3 bg-muted rounded-lg">
                                 <Ruler className="w-5 h-5 mb-2 text-primary" />
                                 <span className="text-sm font-medium">{property.area} sqm</span>
                             </div>
                             <div className="flex flex-col items-center p-3 bg-muted rounded-lg">
                                 <Layers className="w-5 h-5 mb-2 text-primary" />
                                 <span className="text-sm font-medium">Floor {property.floor ?? "G"}</span>
-                            </div>
-                            <div className="flex flex-col items-center p-3 bg-muted rounded-lg">
-                                <User className="w-5 h-5 mb-2 text-primary" />
-                                <span className="text-sm font-medium truncate w-full text-center">{property.createdBy}</span>
                             </div>
                         </div>
 

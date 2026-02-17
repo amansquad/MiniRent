@@ -4,7 +4,7 @@ namespace MiniRent.Backend.Models;
 
 public class RentalInquiry
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     
     [Required]
     [MaxLength(100)]
@@ -32,12 +32,15 @@ public class RentalInquiry
     public DateTime? UpdatedAt { get; set; }
     
     // Optional property link
-    public int? PropertyId { get; set; }
+    public Guid? PropertyId { get; set; }
     public Property? Property { get; set; }
     
     // Navigation properties
-    public int? CreatedById { get; set; }
+    public Guid? CreatedById { get; set; }
     public User? CreatedBy { get; set; }
+
+    public Guid? RentalRecordId { get; set; }
+    public RentalRecord? RentalRecord { get; set; }
 }
 
 public enum InquiryStatus

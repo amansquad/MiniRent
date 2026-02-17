@@ -18,9 +18,9 @@ export default function RentalsPage() {
     const [error, setError] = useState("");
     const [filter, setFilter] = useState<"all" | "my">("all");
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [currentUserId, setCurrentUserId] = useState<number | null>(null);
+    const [currentUserId, setCurrentUserId] = useState<string | null>(null);
     const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
-    const [highlightedId, setHighlightedId] = useState<number | null>(null);
+    const [highlightedId, setHighlightedId] = useState<string | null>(null);
     const [endRental, setEndRental] = useState<any | null>(null);
     const { toast } = useToast();
 
@@ -37,7 +37,7 @@ export default function RentalsPage() {
             const params = new URLSearchParams((window as any).location.search);
             const idParam = params.get("id");
             if (idParam) {
-                setHighlightedId(parseInt(idParam));
+                setHighlightedId(idParam);
                 setTimeout(() => setHighlightedId(null), 3000);
             }
         }
@@ -71,9 +71,9 @@ export default function RentalsPage() {
             });
     };
 
-    const [deleteId, setDeleteId] = useState<number | null>(null);
+    const [deleteId, setDeleteId] = useState<string | null>(null);
 
-    const handleDeleteClick = (id: number) => {
+    const handleDeleteClick = (id: string) => {
         setDeleteId(id);
     };
 
@@ -115,7 +115,7 @@ export default function RentalsPage() {
         }
     };
 
-    const handleStatusUpdate = async (id: number, status: string) => {
+    const handleStatusUpdate = async (id: string, status: string) => {
         try {
             const token = typeof (window as any) !== "undefined" ? (window as any).localStorage.getItem("token") : null;
             const res = await fetch(`/api/rentals/${id}/status`, {

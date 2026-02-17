@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 interface EndRentalModalProps {
     isOpen: boolean;
     onClose: () => void;
-    rentalId: number;
+    rentalId: string;
     propertyAddress: string;
     onSuccess: () => void;
 }
@@ -30,7 +30,7 @@ export function EndRentalModal({ isOpen, onClose, rentalId, propertyAddress, onS
         setLoading(true);
 
         try {
-            const token = typeof (window as any) !== "undefined" ? ((window as any).localStorage.getItem)("token") : null;
+            const token = (typeof (window as any) !== "undefined") ? (window as any).localStorage.getItem("token") : null;
             const res = await fetch(`/api/rentals/${rentalId}/end`, {
                 method: "POST",
                 headers: {
@@ -44,7 +44,7 @@ export function EndRentalModal({ isOpen, onClose, rentalId, propertyAddress, onS
             });
 
             if (!res.ok) {
-                const data = await res.json();
+                const data = await res.json() as any;
                 throw new Error(data.error || "Failed to end rental");
             }
 
@@ -82,7 +82,7 @@ export function EndRentalModal({ isOpen, onClose, rentalId, propertyAddress, onS
                             id="endDate"
                             type="date"
                             value={formData.endDate}
-                            onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
                             required
                         />
                     </div>
@@ -92,7 +92,7 @@ export function EndRentalModal({ isOpen, onClose, rentalId, propertyAddress, onS
                             id="notes"
                             placeholder="Reason for ending, property condition, etc."
                             value={formData.notes}
-                            onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+                            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
                         />
                     </div>
                     <DialogFooter className="mt-4">

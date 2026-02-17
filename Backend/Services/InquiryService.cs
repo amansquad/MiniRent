@@ -18,17 +18,18 @@ public class InquiryService : IInquiryService
         _mapper = mapper;
     }
 
-    public async Task<(List<RentalInquiryDto> Inquiries, int TotalCount)> GetInquiriesAsync(InquiryFilterDto filter, int? userId = null, bool isAdmin = false)
+    public async Task<(List<RentalInquiryDto> Inquiries, int TotalCount)> GetInquiriesAsync(InquiryFilterDto filter, Guid? userId = null, bool isAdmin = false)
     {
         var query = _context.RentalInquiries
             .Include(i => i.Property)
             .Include(i => i.CreatedBy)
+            .Include(i => i.RentalRecord)
             .AsQueryable();
 
         // If not admin, filter by user's own inquiries OR inquiries for user's properties
         if (!isAdmin && userId.HasValue)
         {
-            query = query.Where(i => i.CreatedById == userId.Value || i.Property.CreatedById == userId.Value);
+            query = query.Where(i => i.CreatedById == userId.Value || (i.Property != null && i.Property.CreatedById == userId.Value));
         }
 
         // Apply filters
@@ -69,17 +70,18 @@ public class InquiryService : IInquiryService
         return (_mapper.Map<List<RentalInquiryDto>>(inquiries), totalCount);
     }
 
-    public async Task<RentalInquiryDto?> GetInquiryByIdAsync(int id, int? userId = null, bool isAdmin = false)
+    public async Task<RentalInquiryDto?> GetInquiryByIdAsync(Guid id, Guid? userId = null, bool isAdmin = false)
     {
         var query = _context.RentalInquiries
             .Include(i => i.Property)
             .Include(i => i.CreatedBy)
+            .Include(i => i.RentalRecord)
             .Where(i => i.Id == id);
 
         // If not admin, filter by user's own inquiries OR inquiries for user's properties
         if (!isAdmin && userId.HasValue)
         {
-            query = query.Where(i => i.CreatedById == userId.Value || i.Property.CreatedById == userId.Value);
+            query = query.Where(i => i.CreatedById == userId.Value || (i.Property != null && i.Property.CreatedById == userId.Value));
         }
 
         var inquiry = await query.FirstOrDefaultAsync();
@@ -87,7 +89,7 @@ public class InquiryService : IInquiryService
         return inquiry != null ? _mapper.Map<RentalInquiryDto>(inquiry) : null;
     }
 
-    public async Task<RentalInquiryDto> CreateInquiryAsync(InquiryCreateDto createDto, int? userId)
+    public async Task<RentalInquiryDto> CreateInquiryAsync(InquiryCreateDto createDto, Guid? userId)
     {
         // Validate property exists if provided
         if (createDto.PropertyId.HasValue)
@@ -112,12 +114,13 @@ public class InquiryService : IInquiryService
         var createdInquiry = await _context.RentalInquiries
             .Include(i => i.Property)
             .Include(i => i.CreatedBy)
+            .Include(i => i.RentalRecord)
             .FirstAsync(i => i.Id == inquiry.Id);
 
         return _mapper.Map<RentalInquiryDto>(createdInquiry);
     }
 
-    public async Task<RentalInquiryDto?> UpdateInquiryAsync(InquiryUpdateDto updateDto, int userId, bool isAdmin = false)
+    public async Task<RentalInquiryDto?> UpdateInquiryAsync(InquiryUpdateDto updateDto, Guid userId, bool isAdmin = false)
     {
         var query = _context.RentalInquiries
             .Include(i => i.Property)
@@ -149,12 +152,13 @@ public class InquiryService : IInquiryService
         var updatedInquiry = await _context.RentalInquiries
             .Include(i => i.Property)
             .Include(i => i.CreatedBy)
+            .Include(i => i.RentalRecord)
             .FirstAsync(i => i.Id == inquiry.Id);
 
         return _mapper.Map<RentalInquiryDto>(updatedInquiry);
     }
 
-    public async Task<bool> DeleteInquiryAsync(int id, int userId, bool isAdmin = false)
+    public async Task<bool> DeleteInquiryAsync(Guid id, Guid userId, bool isAdmin = false)
     {
         var query = _context.RentalInquiries
             .Where(i => i.Id == id);
