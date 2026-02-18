@@ -122,6 +122,8 @@ builder.Services.AddScoped<ISearchService, SearchService>();
 builder.Services.AddScoped<IAmenityService, AmenityService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<IStatisticsService, StatisticsService>();
+builder.Services.AddScoped<IOwnershipService, SimpleOwnershipService>(); // Using simple version that doesn't require migration
+builder.Services.AddScoped<OwnershipTableService>(); // For managing UserPropertyOwnership table
 
 var app = builder.Build();
 

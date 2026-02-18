@@ -30,11 +30,13 @@ public class PropertyService : IPropertyService
             .Where(p => !p.IsDeleted)
             .AsNoTracking();
 
-        // If not admin, filter by user's own properties
-        if (!isAdmin && userId.HasValue)
+        // Only filter by userId if explicitly provided (e.g., when mode="my")
+        // This allows marketplace view to show all properties
+        if (userId.HasValue)
         {
             query = query.Where(p => p.CreatedById == userId.Value);
         }
+        
         // Apply filters
         if (!string.IsNullOrEmpty(filter.Status) && Enum.TryParse<PropertyStatus>(filter.Status, true, out var status))
         {
@@ -101,11 +103,8 @@ public class PropertyService : IPropertyService
             .Where(p => p.Id == id && !p.IsDeleted)
             .AsNoTracking();
 
-        // If not admin, filter by user's own properties
-        if (!isAdmin && userId.HasValue)
-        {
-            query = query.Where(p => p.CreatedById == userId.Value);
-        }
+        // No authorization filter for viewing - anyone can view any property
+        // Authorization is only enforced for edit/delete operations
 
         var property = await query.FirstOrDefaultAsync();
 

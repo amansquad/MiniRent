@@ -23,7 +23,13 @@ export function EditPropertyModal({ isOpen, onClose, property }: EditPropertyMod
         floor: "",
         monthlyRent: "",
         description: "",
-        status: ""
+        status: "",
+        title: "",
+        city: "",
+        state: "",
+        zipCode: "",
+        country: "",
+        propertyType: ""
     });
 
     useEffect(() => {
@@ -36,7 +42,13 @@ export function EditPropertyModal({ isOpen, onClose, property }: EditPropertyMod
                 floor: property.floor?.toString() || "",
                 monthlyRent: property.monthlyRent?.toString() || "",
                 description: property.description || "",
-                status: property.status || "Available"
+                status: property.status || "Available",
+                title: property.title || "",
+                city: property.city || "",
+                state: property.state || "",
+                zipCode: property.zipCode || "",
+                country: property.country || "",
+                propertyType: property.propertyType || ""
             });
         }
     }, [property]);
@@ -58,12 +70,20 @@ export function EditPropertyModal({ isOpen, onClose, property }: EditPropertyMod
 
         try {
             const payload = {
-                ...formData,
+                address: formData.address,
                 area: Number(formData.area),
                 bedrooms: Number(formData.bedrooms),
                 bathrooms: Number(formData.bathrooms),
                 floor: formData.floor ? Number(formData.floor) : null,
-                monthlyRent: Number(formData.monthlyRent)
+                monthlyRent: Number(formData.monthlyRent),
+                description: formData.description,
+                status: formData.status,
+                title: formData.title,
+                city: formData.city,
+                state: formData.state,
+                zipCode: formData.zipCode,
+                country: formData.country,
+                propertyType: formData.propertyType
             };
 
             const res = await fetch(`/api/properties/${property.id}`, {
@@ -88,18 +108,73 @@ export function EditPropertyModal({ isOpen, onClose, property }: EditPropertyMod
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[500px] max-h-[90vh]">
                 <DialogHeader>
                     <DialogTitle>Edit Property</DialogTitle>
                 </DialogHeader>
-                <form onSubmit={onSubmit} className="grid gap-4 py-4">
+                <form onSubmit={onSubmit} className="grid gap-4 py-4 max-h-[70vh] overflow-y-auto">
                     {error && <div className="text-red-500 text-sm">{error}</div>}
+
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="title" className="text-right">
+                            Title
+                        </Label>
+                        <Input id="title" value={formData.title} onChange={handleChange} className="col-span-3" required />
+                    </div>
 
                     <div className="grid grid-cols-4 items-center gap-4">
                         <Label htmlFor="address" className="text-right">
                             Address
                         </Label>
                         <Input id="address" value={formData.address} onChange={handleChange} className="col-span-3" required />
+                    </div>
+
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="city" className="text-right">
+                            City
+                        </Label>
+                        <Input id="city" value={formData.city} onChange={handleChange} className="col-span-3" required />
+                    </div>
+
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="state" className="text-right">
+                            State
+                        </Label>
+                        <Input id="state" value={formData.state} onChange={handleChange} className="col-span-3" required />
+                    </div>
+
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="zipCode" className="text-right">
+                            Zip Code
+                        </Label>
+                        <Input id="zipCode" value={formData.zipCode} onChange={handleChange} className="col-span-3" required />
+                    </div>
+
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="country" className="text-right">
+                            Country
+                        </Label>
+                        <Input id="country" value={formData.country} onChange={handleChange} className="col-span-3" required />
+                    </div>
+
+                    <div className="grid grid-cols-4 items-center gap-4">
+                        <Label htmlFor="propertyType" className="text-right">
+                            Type
+                        </Label>
+                        <div className="col-span-3">
+                            <Select value={formData.propertyType} onValueChange={(value) => setFormData(prev => ({ ...prev, propertyType: value }))}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Apartment">Apartment</SelectItem>
+                                    <SelectItem value="House">House</SelectItem>
+                                    <SelectItem value="Condo">Condo</SelectItem>
+                                    <SelectItem value="Studio">Studio</SelectItem>
+                                    <SelectItem value="Townhouse">Townhouse</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-4 items-center gap-4">

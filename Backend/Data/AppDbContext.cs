@@ -23,6 +23,9 @@ public class AppDbContext : DbContext
     public DbSet<UserOwnershipStats> UserOwnershipStats { get; set; }
     public DbSet<PropertyStatistics> PropertyStatistics { get; set; }
     public DbSet<RentalStatistics> RentalStatistics { get; set; }
+    
+    // Ownership tracking
+    public DbSet<UserPropertyOwnership> UserPropertyOwnerships { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -251,6 +254,27 @@ public class AppDbContext : DbContext
                   .OnDelete(DeleteBehavior.Cascade);
                   
             entity.HasIndex(e => e.RentalId).IsUnique();
+        });
+
+        // UserPropertyOwnership configuration
+        modelBuilder.Entity<UserPropertyOwnership>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            
+            entity.HasOne(e => e.User)
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
+            
+            entity.HasOne(e => e.Property)
+                  .WithMany()
+                  .HasForeignKey(e => e.PropertyId)
+                  .OnDelete(DeleteBehavior.NoAction);
+            
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.PropertyId);
+            entity.HasIndex(e => e.IsActive);
+            entity.HasIndex(e => new { e.UserId, e.PropertyId }).IsUnique();
         });
 
         // Seed initial data

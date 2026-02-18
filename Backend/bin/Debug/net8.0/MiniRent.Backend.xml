@@ -64,6 +64,66 @@
             <param name="id">The inquiry GUID.</param>
             <returns>No content if successful.</returns>
         </member>
+        <member name="M:MiniRent.Backend.Controllers.OwnershipController.GetTableStatus">
+            <summary>
+            Check if UserPropertyOwnership table exists and get status
+            </summary>
+        </member>
+        <member name="M:MiniRent.Backend.Controllers.OwnershipController.PopulateTable">
+            <summary>
+            Populate UserPropertyOwnership table with existing data
+            </summary>
+        </member>
+        <member name="M:MiniRent.Backend.Controllers.OwnershipController.AddOwnershipRecord(MiniRent.Backend.Controllers.AddOwnershipRequest)">
+            <summary>
+            Add ownership record for a property
+            </summary>
+        </member>
+        <member name="M:MiniRent.Backend.Controllers.OwnershipController.GetAllOwnerships">
+            <summary>
+            Get all user-property ownership relationships with details
+            </summary>
+        </member>
+        <member name="M:MiniRent.Backend.Controllers.OwnershipController.GetPropertiesByOwner(System.Guid)">
+            <summary>
+            Get all properties owned by a specific user
+            </summary>
+        </member>
+        <member name="M:MiniRent.Backend.Controllers.OwnershipController.GetPropertyOwnership(System.Guid)">
+            <summary>
+            Get ownership details for a specific property
+            </summary>
+        </member>
+        <member name="M:MiniRent.Backend.Controllers.OwnershipController.GetAllUserSummaries">
+            <summary>
+            Get summary of properties for all users
+            </summary>
+        </member>
+        <member name="M:MiniRent.Backend.Controllers.OwnershipController.GetUserSummary(System.Guid)">
+            <summary>
+            Get property summary for a specific user
+            </summary>
+        </member>
+        <member name="M:MiniRent.Backend.Controllers.OwnershipController.GetAllOwnershipHistory">
+            <summary>
+            Get ownership history for all properties
+            </summary>
+        </member>
+        <member name="M:MiniRent.Backend.Controllers.OwnershipController.GetPropertyHistory(System.Guid)">
+            <summary>
+            Get ownership history for a specific property
+            </summary>
+        </member>
+        <member name="M:MiniRent.Backend.Controllers.OwnershipController.GetUserPropertiesSimple(System.Guid)">
+            <summary>
+            Get simple list of properties for a user
+            </summary>
+        </member>
+        <member name="M:MiniRent.Backend.Controllers.OwnershipController.GetPropertyCount(System.Guid)">
+            <summary>
+            Get count of properties owned by a user
+            </summary>
+        </member>
         <member name="M:MiniRent.Backend.Controllers.PropertiesController.GetProperties(System.String,System.Nullable{System.Int32},System.Nullable{System.Int32},System.Nullable{System.Decimal},System.Nullable{System.Decimal},System.String,System.String,System.String,System.Int32,System.Int32,System.String)">
             <summary>
             Gets a paginated list of properties with optional filtering.
@@ -190,6 +250,26 @@
             <param name="id">User GUID.</param>
             <returns>No content.</returns>
         </member>
+        <member name="T:MiniRent.Backend.Dtos.UserPropertyOwnershipDto">
+            <summary>
+            Detailed view of user-property ownership with rental information
+            </summary>
+        </member>
+        <member name="T:MiniRent.Backend.Dtos.UserPropertiesSummaryDto">
+            <summary>
+            Summary of properties owned by a user
+            </summary>
+        </member>
+        <member name="T:MiniRent.Backend.Dtos.PropertyOwnershipHistoryDto">
+            <summary>
+            Property ownership history with owner details
+            </summary>
+        </member>
+        <member name="T:MiniRent.Backend.Dtos.UserPropertyDto">
+            <summary>
+            Simple user-property relationship
+            </summary>
+        </member>
         <member name="T:MiniRent.Backend.Dtos.PropertyDto">
             <summary>
             Data transfer object for property details.
@@ -281,6 +361,82 @@
         </member>
         <member name="M:MiniRent.Backend.Migrations.AddStatisticsTablesAndViews.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
+        </member>
+        <member name="T:MiniRent.Backend.Migrations.AddUserPropertyOwnershipView">
+            <inheritdoc />
+        </member>
+        <member name="M:MiniRent.Backend.Migrations.AddUserPropertyOwnershipView.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:MiniRent.Backend.Migrations.AddUserPropertyOwnershipView.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:MiniRent.Backend.Migrations.AddUserPropertyOwnershipView.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:MiniRent.Backend.Migrations.CreateUserPropertyOwnershipTable">
+            <inheritdoc />
+        </member>
+        <member name="M:MiniRent.Backend.Migrations.CreateUserPropertyOwnershipTable.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:MiniRent.Backend.Migrations.CreateUserPropertyOwnershipTable.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:MiniRent.Backend.Migrations.CreateUserPropertyOwnershipTable.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:MiniRent.Backend.Models.UserPropertyOwnership">
+            <summary>
+            Represents the ownership relationship between a user and a property.
+            This table provides explicit tracking of property ownership.
+            </summary>
+        </member>
+        <member name="T:MiniRent.Backend.Services.OwnershipTableService">
+            <summary>
+            Service for managing the UserPropertyOwnership table
+            </summary>
+        </member>
+        <member name="M:MiniRent.Backend.Services.OwnershipTableService.PopulateOwnershipTableAsync">
+            <summary>
+            Populate the UserPropertyOwnership table with existing property ownership data
+            </summary>
+        </member>
+        <member name="M:MiniRent.Backend.Services.OwnershipTableService.AddOwnershipRecordAsync(System.Guid,System.Guid,System.String)">
+            <summary>
+            Add ownership record for a specific property
+            </summary>
+        </member>
+        <member name="M:MiniRent.Backend.Services.OwnershipTableService.DeactivateOwnershipAsync(System.Guid,System.Guid)">
+            <summary>
+            Deactivate ownership record (for ownership transfers)
+            </summary>
+        </member>
+        <member name="M:MiniRent.Backend.Services.OwnershipTableService.GetUserOwnershipsAsync(System.Guid)">
+            <summary>
+            Get all ownership records for a user
+            </summary>
+        </member>
+        <member name="M:MiniRent.Backend.Services.OwnershipTableService.GetPropertyOwnershipAsync(System.Guid)">
+            <summary>
+            Get ownership record for a property
+            </summary>
+        </member>
+        <member name="M:MiniRent.Backend.Services.OwnershipTableService.GetTableStatusAsync">
+            <summary>
+            Check if table exists and has data
+            </summary>
+        </member>
+        <member name="M:MiniRent.Backend.Services.OwnershipTableService.GetAvailablePropertiesCountAsync">
+            <summary>
+            Get count of properties that can be added to ownership table
+            </summary>
+        </member>
+        <member name="T:MiniRent.Backend.Services.SimpleOwnershipService">
+            <summary>
+            Simple ownership service that works without the UserPropertyOwnership table
+            Uses the existing Properties.CreatedById relationship
+            </summary>
         </member>
     </members>
 </doc>
