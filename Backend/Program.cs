@@ -15,7 +15,21 @@ using MiniRent.Backend.Middleware;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.MaxDepth = 64; // Increase depth for nested objects
+        // Allow large responses for Base64 images
+        options.JsonSerializerOptions.DefaultBufferSize = 10 * 1024 * 1024; // 10MB buffer
+    });
+
+// Configure Kestrel to handle large requests/responses
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = 10 * 1024 * 1024; // 10MB
+    options.Limits.MaxResponseBufferSize = 10 * 1024 * 1024; // 10MB
+});
+
 builder.Services.AddResponseCaching();
 builder.Services.AddResponseCompression(options =>
 {
@@ -58,6 +72,8 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 
+    // Resolve conflicts by using full names
+    c.CustomSchemaIds(type => type.FullName);
 
     // Include XML comments if available
     var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
@@ -149,6 +165,69 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Diagnostic endpoint to check and create admin user
+app.MapGet("/api/debug/check-admin", async (AppDbContext context) =>
+{
+    var admin = await context.Users.FirstOrDefaultAsync(u => u.Username == "admin");
+    
+    if (admin == null)
+    {
+        return Results.Json(new { exists = false, message = "Admin user does not exist" });
+    }
+    
+    return Results.Json(new
+    {
+        exists = true,
+        id = admin.Id,
+        username = admin.Username,
+        role = admin.Role.ToString(),
+        isActive = admin.IsActive,
+        email = admin.Email
+    });
+});
+
+app.MapPost("/api/debug/create-admin", async (AppDbContext context) =>
+{
+    var adminExists = await context.Users.AnyAsync(u => u.Username == "admin");
+    
+    if (adminExists)
+    {
+        return Results.Json(new { success = false, message = "Admin user already exists" });
+    }
+    
+    var adminUser = new User
+    {
+        Username = "admin",
+        FullName = "System Administrator",
+        Email = "admin@minirent.com",
+        PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"),
+        Role = UserRole.Admin,
+        IsActive = true,
+        CreatedAt = DateTime.UtcNow
+    };
+    
+    context.Users.Add(adminUser);
+    await context.SaveChangesAsync();
+    
+    return Results.Json(new { success = true, message = "Admin user created successfully", username = "admin", password = "admin123" });
+});
+
+app.MapPost("/api/debug/reset-admin-password", async (AppDbContext context) =>
+{
+    var admin = await context.Users.FirstOrDefaultAsync(u => u.Username == "admin");
+    
+    if (admin == null)
+    {
+        return Results.Json(new { success = false, message = "Admin user does not exist" });
+    }
+    
+    admin.PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123");
+    admin.UpdatedAt = DateTime.UtcNow;
+    await context.SaveChangesAsync();
+    
+    return Results.Json(new { success = true, message = "Admin password reset to 'admin123'" });
+});
 
 // Seed data
 using (var scope = app.Services.CreateScope())

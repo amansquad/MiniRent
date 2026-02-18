@@ -219,4 +219,94 @@ public class PropertyService : IPropertyService
 
         return _mapper.Map<PropertyDto>(updatedProperty);
     }
+
+    public async Task<PropertyImageDto?> AddPropertyImageAsync(Guid propertyId, PropertyImageCreateDto imageDto, Guid userId, bool isAdmin = false)
+    {
+        var query = _context.Properties
+            .Include(p => p.Images)
+            .Where(p => p.Id == propertyId && !p.IsDeleted);
+
+        if (!isAdmin)
+        {
+            query = query.Where(p => p.CreatedById == userId);
+        }
+
+        var property = await query.FirstOrDefaultAsync();
+        if (property == null) return null;
+
+        // If this is set as primary, unset other primary images
+        if (imageDto.IsPrimary)
+        {
+            foreach (var img in property.Images)
+            {
+                img.IsPrimary = false;
+            }
+        }
+
+        var image = new PropertyImage
+        {
+            PropertyId = propertyId,
+            Url = imageDto.Url,
+            Caption = imageDto.Caption,
+            IsPrimary = imageDto.IsPrimary,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _context.PropertyImages.Add(image);
+        await _context.SaveChangesAsync();
+
+        return _mapper.Map<PropertyImageDto>(image);
+    }
+
+    public async Task<bool> DeletePropertyImageAsync(Guid propertyId, Guid imageId, Guid userId, bool isAdmin = false)
+    {
+        var query = _context.Properties
+            .Include(p => p.Images)
+            .Where(p => p.Id == propertyId && !p.IsDeleted);
+
+        if (!isAdmin)
+        {
+            query = query.Where(p => p.CreatedById == userId);
+        }
+
+        var property = await query.FirstOrDefaultAsync();
+        if (property == null) return false;
+
+        var image = property.Images.FirstOrDefault(i => i.Id == imageId);
+        if (image == null) return false;
+
+        _context.PropertyImages.Remove(image);
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> SetPrimaryImageAsync(Guid propertyId, Guid imageId, Guid userId, bool isAdmin = false)
+    {
+        var query = _context.Properties
+            .Include(p => p.Images)
+            .Where(p => p.Id == propertyId && !p.IsDeleted);
+
+        if (!isAdmin)
+        {
+            query = query.Where(p => p.CreatedById == userId);
+        }
+
+        var property = await query.FirstOrDefaultAsync();
+        if (property == null) return false;
+
+        var targetImage = property.Images.FirstOrDefault(i => i.Id == imageId);
+        if (targetImage == null) return false;
+
+        // Unset all primary flags
+        foreach (var img in property.Images)
+        {
+            img.IsPrimary = false;
+        }
+
+        // Set the target as primary
+        targetImage.IsPrimary = true;
+        await _context.SaveChangesAsync();
+        return true;
+    }
 }
+

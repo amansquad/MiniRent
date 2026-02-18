@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace MiniRent.Backend.Dtos;
 
 public class PropertyImageDto
@@ -7,4 +9,16 @@ public class PropertyImageDto
     public string? Caption { get; set; }
     public bool IsPrimary { get; set; }
     public DateTime CreatedAt { get; set; }
+}
+
+public class PropertyImageCreateDto
+{
+    [Required]
+    [MaxLength(5000000)] // Support Base64 images (up to ~5MB)
+    public string Url { get; set; } = string.Empty;
+    
+    [MaxLength(200)]
+    public string? Caption { get; set; }
+    
+    public bool IsPrimary { get; set; } = false;
 }

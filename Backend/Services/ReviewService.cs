@@ -34,6 +34,17 @@ public class ReviewService : IReviewService
             throw new InvalidOperationException("User has already reviewed this property.");
         }
 
+        // Check if user has completed a rental for this property
+        var hasCompletedRental = await _context.RentalRecords.AnyAsync(r => 
+            r.PropertyId == createDto.PropertyId && 
+            r.TenantId == reviewerId && 
+            (r.Status == RentalStatus.Ended || r.Status == RentalStatus.Active));
+        
+        if (!hasCompletedRental)
+        {
+            throw new InvalidOperationException("You can only review properties you have rented.");
+        }
+
         var review = _mapper.Map<Review>(createDto);
         review.ReviewerId = reviewerId;
         review.CreatedAt = DateTime.UtcNow;

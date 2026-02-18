@@ -55,7 +55,7 @@ public class RentalService : IRentalService
 
         if (!string.IsNullOrEmpty(filter.TenantName))
         {
-            query = query.Where(r => r.TenantName.Contains(filter.TenantName));
+            query = query.Where(r => r.TenantName != null && r.TenantName.Contains(filter.TenantName));
         }
         var totalCount = await query.CountAsync();
 

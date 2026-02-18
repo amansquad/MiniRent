@@ -224,12 +224,11 @@ export default function RentalsPage() {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center justify-between text-xs text-muted-foreground border-t pt-3">
+                                    <div className="flex items-center text-xs text-muted-foreground border-t pt-3">
                                         <span className="flex items-center">
                                             <User className="w-3 h-3 mr-1" />
                                             {rental.createdBy}
                                         </span>
-                                        <span>#{rental.id}</span>
                                     </div>
                                 </div>
 

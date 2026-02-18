@@ -228,8 +228,8 @@ public class DashboardService : IDashboardService
             .Include(r => r.Property)
             .Include(r => r.CreatedBy)
             .AsNoTracking()
-            .Where(r => r.TenantName.ToLower().Contains(query) ||
-                        r.Property.Address.ToLower().Contains(query));
+            .Where(r => (r.TenantName != null && r.TenantName.ToLower().Contains(query)) ||
+                        (r.Property != null && r.Property.Address.ToLower().Contains(query)));
 
         if (!isAdmin && userId.HasValue)
         {

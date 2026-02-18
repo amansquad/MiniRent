@@ -10,4 +10,7 @@ public interface IPropertyService
     Task<PropertyDto?> UpdatePropertyAsync(PropertyUpdateDto updateDto, Guid userId, bool isAdmin = false);
     Task<bool> DeletePropertyAsync(Guid id, Guid userId, bool isAdmin = false);
     Task<PropertyDto?> UpdatePropertyStatusAsync(Guid id, PropertyStatusUpdateDto statusDto, Guid userId, bool isAdmin = false);
+    Task<PropertyImageDto?> AddPropertyImageAsync(Guid propertyId, PropertyImageCreateDto imageDto, Guid userId, bool isAdmin = false);
+    Task<bool> DeletePropertyImageAsync(Guid propertyId, Guid imageId, Guid userId, bool isAdmin = false);
+    Task<bool> SetPrimaryImageAsync(Guid propertyId, Guid imageId, Guid userId, bool isAdmin = false);
 }

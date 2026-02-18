@@ -157,7 +157,7 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<PropertyImage>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Url).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.Url).IsRequired(); // Remove MaxLength to allow Base64
             
             entity.HasOne(e => e.Property)
                   .WithMany(p => p.Images)

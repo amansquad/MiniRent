@@ -51,16 +51,27 @@ export function AddRentalModal({ isOpen, onClose, property }: AddRentalModalProp
         setError("");
         const token = (typeof (window as any) !== "undefined") ? (window as any).localStorage.getItem("token") : null;
 
+        // Get current user info
+        const userStr = (typeof (window as any) !== "undefined") ? (window as any).localStorage.getItem("user") : null;
+        const user = userStr ? JSON.parse(userStr) : null;
+
+        if (!user || !user.id) {
+            setError("You must be logged in to submit a rental request");
+            setLoading(false);
+            return;
+        }
+
         try {
             const payload = {
                 propertyId: property.id,
+                tenantId: user.id,
                 tenantName: formData.tenantName,
                 tenantPhone: formData.tenantPhone,
                 tenantEmail: formData.tenantEmail || null,
                 startDate: new Date(formData.startDate).toISOString(),
-                deposit: Number(formData.deposit),
+                securityDeposit: Number(formData.deposit),
                 monthlyRent: property.monthlyRent,
-                notes: formData.notes
+                notes: formData.notes || null
             };
 
             const res = await fetch("/api/rentals", {

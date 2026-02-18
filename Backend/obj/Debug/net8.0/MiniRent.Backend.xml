@@ -24,6 +24,13 @@
             <param name="loginDto">The login credentials.</param>
             <returns>A token and user profile if successful.</returns>
         </member>
+        <member name="M:MiniRent.Backend.Controllers.AuthController.Register(MiniRent.Backend.Dtos.RegisterUserDto)">
+            <summary>
+            Registers a new user (Admin only).
+            </summary>
+            <param name="registerDto">The registration details.</param>
+            <returns>The created user details.</returns>
+        </member>
         <member name="M:MiniRent.Backend.Controllers.AuthController.GetCurrentUser">
             <summary>
             Gets the current authenticated user's profile.
@@ -161,6 +168,21 @@
             </summary>
             <param name="id">The property GUID.</param>
             <returns>No content if successful.</returns>
+        </member>
+        <member name="M:MiniRent.Backend.Controllers.PropertiesController.AddPropertyImage(System.Guid,MiniRent.Backend.Dtos.PropertyImageCreateDto)">
+            <summary>
+            Adds an image to a property. Only property owner or admin can add images.
+            </summary>
+        </member>
+        <member name="M:MiniRent.Backend.Controllers.PropertiesController.DeletePropertyImage(System.Guid,System.Guid)">
+            <summary>
+            Deletes an image from a property. Only property owner or admin can delete images.
+            </summary>
+        </member>
+        <member name="M:MiniRent.Backend.Controllers.PropertiesController.SetPrimaryImage(System.Guid,System.Guid)">
+            <summary>
+            Sets an image as the primary image for a property. Only property owner or admin can set primary image.
+            </summary>
         </member>
         <member name="M:MiniRent.Backend.Controllers.RentalsController.GetRentals(MiniRent.Backend.Dtos.RentalFilterDto,System.String)">
             <summary>
@@ -372,6 +394,18 @@
             <inheritdoc />
         </member>
         <member name="M:MiniRent.Backend.Migrations.AddUserPropertyOwnershipView.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:MiniRent.Backend.Migrations.UpdatePropertyImageUrlLength">
+            <inheritdoc />
+        </member>
+        <member name="M:MiniRent.Backend.Migrations.UpdatePropertyImageUrlLength.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:MiniRent.Backend.Migrations.UpdatePropertyImageUrlLength.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:MiniRent.Backend.Migrations.UpdatePropertyImageUrlLength.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
         <member name="T:MiniRent.Backend.Migrations.CreateUserPropertyOwnershipTable">

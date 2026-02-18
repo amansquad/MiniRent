@@ -72,14 +72,15 @@ public class SearchService : ISearchService
         }
 
         var rentals = await rentalsQuery
-            .Where(r => r.TenantName.ToLower().Contains(q) || r.TenantPhone.ToLower().Contains(q))
+            .Where(r => (r.TenantName != null && r.TenantName.ToLower().Contains(q)) || 
+                       (r.TenantPhone != null && r.TenantPhone.ToLower().Contains(q)))
             .Take(5)
             .Select(r => new UnifiedSearchResultDto
             {
                 Type = "Rental",
                 Id = r.Id,
-                Title = r.TenantName,
-                Subtitle = $"Phone: {r.TenantPhone} | Status: {r.Status}",
+                Title = r.TenantName ?? "Unknown",
+                Subtitle = $"Phone: {r.TenantPhone ?? "N/A"} | Status: {r.Status}",
                 Url = $"/rentals?id={r.Id}"
             })
             .ToListAsync();

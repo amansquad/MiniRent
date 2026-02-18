@@ -4,13 +4,15 @@ import { useEffect, useState, use } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Home, BedDouble, Bath, Layers, Ruler, Calendar, User, Phone, Mail, FileText } from "lucide-react";
+import { ArrowLeft, Home, BedDouble, Bath, Layers, Ruler, Calendar, User, Phone, Mail, FileText, Star, Image as ImageIcon, X, Upload } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { getUser } from "@/lib/auth";
 import AddInquiryModal from "@/components/AddInquiryModal";
 import { AddRentalModal } from "@/components/AddRentalModal";
+import { AddReviewModal } from "@/components/AddReviewModal";
+import { PropertyImageManager } from "@/components/PropertyImageManager";
 
 interface RentalHistory {
     id: string;
@@ -23,20 +25,42 @@ interface RentalHistory {
     createdBy: string;
 }
 
+interface PropertyImage {
+    id: string;
+    url: string;
+    caption: string | null;
+    isPrimary: boolean;
+    createdAt: string;
+}
+
+interface Review {
+    id: string;
+    rating: number;
+    comment: string | null;
+    createdAt: string;
+    reviewerName: string;
+}
+
 interface Property {
     id: string;
     address: string;
+    city: string;
+    state: string;
+    country: string;
     area: number;
     bedrooms: number;
     bathrooms: number;
     floor: number | null;
     monthlyRent: number;
     status: string;
+    propertyType: string;
     description: string | null;
     imageUrl: string | null;
     createdBy: string;
     createdById: string;
     recentRentals: RentalHistory[];
+    images: PropertyImage[];
+    reviews: Review[];
 }
 
 export default function PropertyDetailPage() {
@@ -49,6 +73,10 @@ export default function PropertyDetailPage() {
     const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
     const [showInquiryModal, setShowInquiryModal] = useState(false);
     const [showRentalModal, setShowRentalModal] = useState(false);
+    const [showReviewModal, setShowReviewModal] = useState(false);
+    const [showImageManager, setShowImageManager] = useState(false);
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [hasRented, setHasRented] = useState(false);
 
     useEffect(() => {
         const user = getUser();
@@ -78,6 +106,14 @@ export default function PropertyDetailPage() {
 
             const data = await res.json();
             setProperty(data);
+
+            // Check if user has rented this property
+            if (currentUserId && data.recentRentals) {
+                const userRental = data.recentRentals.find((r: any) =>
+                    r.tenantId === currentUserId && (r.status === "Ended" || r.status === "Active")
+                );
+                setHasRented(!!userRental);
+            }
         } catch (error) {
             console.error("Error:", error);
             toast({ title: "Error", description: "Failed to load property details", variant: "destructive" });
@@ -105,11 +141,70 @@ export default function PropertyDetailPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Column: Property Details */}
                 <div className="lg:col-span-2 space-y-6">
+                    {/* Image Gallery */}
+                    {property.images && property.images.length > 0 && (
+                        <Card className="p-0 overflow-hidden">
+                            <div className="relative aspect-video bg-muted">
+                                <img
+                                    src={selectedImage || property.images.find(i => i.isPrimary)?.url || property.images[0]?.url}
+                                    alt={property.address}
+                                    className="w-full h-full object-cover cursor-pointer"
+                                    onClick={() => setSelectedImage(selectedImage || property.images.find(i => i.isPrimary)?.url || property.images[0]?.url)}
+                                />
+                                {isOwner && (
+                                    <Button
+                                        size="sm"
+                                        variant="secondary"
+                                        className="absolute top-4 right-4"
+                                        onClick={() => setShowImageManager(true)}
+                                    >
+                                        <Upload className="w-4 h-4 mr-2" />
+                                        Manage Images
+                                    </Button>
+                                )}
+                            </div>
+                            {property.images.length > 1 && (
+                                <div className="flex gap-2 p-4 overflow-x-auto">
+                                    {property.images.map((img) => (
+                                        <div
+                                            key={img.id}
+                                            className={`relative flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden cursor-pointer border-2 ${selectedImage === img.url ? 'border-primary' : 'border-transparent'
+                                                }`}
+                                            onClick={() => setSelectedImage(img.url)}
+                                        >
+                                            <img src={img.url} alt={img.caption || ''} className="w-full h-full object-cover" />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </Card>
+                    )}
+
+                    {isOwner && (!property.images || property.images.length === 0) && (
+                        <Card className="p-6 text-center">
+                            <ImageIcon className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
+                            <p className="text-muted-foreground mb-4">No images added yet</p>
+                            <Button onClick={() => setShowImageManager(true)}>
+                                <Upload className="w-4 h-4 mr-2" />
+                                Add Images
+                            </Button>
+                        </Card>
+                    )}
+
                     <Card className="p-6">
                         <div className="flex justify-between items-start mb-4">
-                            <div>
-                                <h1 className="text-3xl font-bold">{property.address}</h1>
-                                <p className="text-xl text-primary font-semibold mt-1">${property.monthlyRent}/month</p>
+                            <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <h1 className="text-3xl font-bold">{property.address}</h1>
+                                    <Badge variant="outline" className="text-sm">
+                                        <Home className="w-3 h-3 mr-1" />
+                                        {property.propertyType}
+                                    </Badge>
+                                </div>
+                                <p className="text-muted-foreground mb-2">
+                                    {property.city}, {property.state}, {property.country}
+                                </p>
+                                <p className="text-xl text-primary font-semibold">${property.monthlyRent}/month</p>
                             </div>
                             <Badge variant={property.status.toLowerCase() === "available" ? "default" : "secondary"} className="text-sm px-3 py-1">
                                 {property.status}
@@ -141,6 +236,50 @@ export default function PropertyDetailPage() {
                                 {property.description || "No description available for this property."}
                             </p>
                         </div>
+                    </Card>
+
+                    {/* Reviews Section */}
+                    <Card className="p-6">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-xl font-bold flex items-center">
+                                <Star className="w-5 h-5 mr-2 text-primary" />
+                                Reviews ({property.reviews?.length || 0})
+                            </h2>
+                            {hasRented && !isOwner && (
+                                <Button size="sm" onClick={() => setShowReviewModal(true)}>
+                                    Write Review
+                                </Button>
+                            )}
+                        </div>
+                        {!property.reviews || property.reviews.length === 0 ? (
+                            <p className="text-muted-foreground text-center py-4 bg-muted/30 rounded-lg">No reviews yet.</p>
+                        ) : (
+                            <div className="space-y-4">
+                                {property.reviews.map((review) => (
+                                    <div key={review.id} className="border-b pb-4 last:border-0">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <div>
+                                                <p className="font-semibold">{review.reviewerName}</p>
+                                                <div className="flex items-center gap-1 mt-1">
+                                                    {[...Array(5)].map((_, i) => (
+                                                        <Star
+                                                            key={i}
+                                                            className={`w-4 h-4 ${i < review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <span className="text-xs text-muted-foreground">
+                                                {new Date(review.createdAt).toLocaleDateString()}
+                                            </span>
+                                        </div>
+                                        {review.comment && (
+                                            <p className="text-sm text-muted-foreground mt-2">{review.comment}</p>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </Card>
 
                     {/* Rental History Section */}
@@ -232,6 +371,30 @@ export default function PropertyDetailPage() {
                     isOpen={showRentalModal}
                     onClose={() => setShowRentalModal(false)}
                     property={property}
+                />
+            )}
+
+            {showReviewModal && (
+                <AddReviewModal
+                    isOpen={showReviewModal}
+                    onClose={() => {
+                        setShowReviewModal(false);
+                        fetchProperty();
+                    }}
+                    propertyId={property.id}
+                    propertyAddress={property.address}
+                />
+            )}
+
+            {showImageManager && (
+                <PropertyImageManager
+                    isOpen={showImageManager}
+                    onClose={() => {
+                        setShowImageManager(false);
+                        fetchProperty();
+                    }}
+                    propertyId={property.id}
+                    images={property.images || []}
                 />
             )}
         </div>

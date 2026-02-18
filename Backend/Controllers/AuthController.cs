@@ -66,6 +66,13 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
+    /// <summary>
+    /// Registers a new user (Admin only).
+    /// </summary>
+    /// <param name="registerDto">The registration details.</param>
+    /// <returns>The created user details.</returns>
+    [HttpPost("register")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> Register([FromBody] RegisterUserDto registerDto)
     {
         _logger.LogInformation("Admin registration attempt for username: {Username}", registerDto.Username);

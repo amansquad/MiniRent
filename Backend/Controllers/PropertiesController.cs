@@ -36,6 +36,7 @@ public class PropertiesController : ControllerBase
     /// <param name="mode">"my" for user's owned properties, null for all.</param>
     /// <returns>A paginated list of properties.</returns>
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IActionResult> GetProperties(
         [FromQuery] string? status,
         [FromQuery] int? minBedrooms,
@@ -92,6 +93,7 @@ public class PropertiesController : ControllerBase
     /// <param name="id">The property GUID.</param>
     /// <returns>The property details if found.</returns>
     [HttpGet("{id}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetProperty(Guid id)
     {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
@@ -208,5 +210,89 @@ public class PropertiesController : ControllerBase
         }
 
         return Ok(property);
+    }
+
+    /// <summary>
+    /// Adds an image to a property. Only property owner or admin can add images.
+    /// </summary>
+    [HttpPost("{id}/images")]
+    public async Task<IActionResult> AddPropertyImage(Guid id, [FromBody] PropertyImageCreateDto imageDto)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null)
+        {
+            return Unauthorized();
+        }
+
+        var userId = Guid.Parse(userIdClaim.Value);
+        var roleClaim = User.FindFirst(ClaimTypes.Role) ?? User.FindFirst("role");
+        bool isAdmin = roleClaim?.Value == "Admin";
+
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+            return BadRequest(new { message = "Validation failed", errors });
+        }
+
+        var image = await _propertyService.AddPropertyImageAsync(id, imageDto, userId, isAdmin);
+
+        if (image == null)
+        {
+            return NotFound(new { message = "Property not found or unauthorized" });
+        }
+
+        return Ok(image);
+    }
+
+    /// <summary>
+    /// Deletes an image from a property. Only property owner or admin can delete images.
+    /// </summary>
+    [HttpDelete("{id}/images/{imageId}")]
+    public async Task<IActionResult> DeletePropertyImage(Guid id, Guid imageId)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null)
+        {
+            return Unauthorized();
+        }
+
+        var userId = Guid.Parse(userIdClaim.Value);
+        var roleClaim = User.FindFirst(ClaimTypes.Role) ?? User.FindFirst("role");
+        bool isAdmin = roleClaim?.Value == "Admin";
+
+        var success = await _propertyService.DeletePropertyImageAsync(id, imageId, userId, isAdmin);
+
+        if (!success)
+        {
+            return NotFound(new { message = "Property or image not found, or unauthorized" });
+        }
+
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Sets an image as the primary image for a property. Only property owner or admin can set primary image.
+    /// </summary>
+    [HttpPatch("{id}/images/{imageId}/primary")]
+    public async Task<IActionResult> SetPrimaryImage(Guid id, Guid imageId)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null)
+        {
+            return Unauthorized();
+        }
+
+        var userId = Guid.Parse(userIdClaim.Value);
+        var roleClaim = User.FindFirst(ClaimTypes.Role) ?? User.FindFirst("role");
+        bool isAdmin = roleClaim?.Value == "Admin";
+
+        var success = await _propertyService.SetPrimaryImageAsync(id, imageId, userId, isAdmin);
+
+        if (!success)
+        {
+            return NotFound(new { message = "Property or image not found, or unauthorized" });
+        }
+
+        return Ok(new { message = "Primary image updated successfully" });
     }
 }
