@@ -41,9 +41,11 @@ import { cn } from "@/lib/utils";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<any>(null);
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
+    setMounted(true);
     setUser(getUser());
   }, [pathname]);
 
@@ -53,7 +55,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     { href: "/properties", label: "Properties", icon: Building2 },
     { href: "/rentals", label: "Rentals", icon: Key },
     { href: "/inquiries", label: "Inquiries", icon: MessageSquare },
-    ...(user?.role === "Admin" ? [{ href: "/users", label: "Users", icon: Users }] : []),
+    ...(mounted && user?.role === "Admin" ? [{ href: "/users", label: "Users", icon: Users }] : []),
     { href: "/profile", label: "Profile", icon: User },
     { href: "/about", label: "About Us", icon: Info },
   ];
